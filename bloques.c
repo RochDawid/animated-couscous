@@ -1,6 +1,6 @@
 #include "bloques.h"
 
-int descriptor;
+static int descriptor = 0;
 
 int bmount(const char *camino) {
     descriptor = open(camino, O_RDWR|O_CREAT, 0666);
@@ -17,7 +17,7 @@ int bmount(const char *camino) {
 int bumount() {
     if (close(descriptor) == -1) {
         // error
-        printf("Error!");
+        perror("Error!");
         return -1;
     }
     
@@ -33,6 +33,20 @@ int bwrite(unsigned int nbloque, const void *buf) {
         }
     }
     
+    perror("Error!");
+    return -1;
+}
+
+int bread(unsigned int nbloque, void *buf) {
+    off_t desplazamiento = nbloque * BLOCKSIZE;
+    if (lseek(descriptor,desplazamiento,SEEK_SET) != -1) {
+        unsigned int nbytes = (unsigned int)sizeof(*buf);
+        if (read(descriptor,buf,nbytes) >= 0) {
+            return BLOCKSIZE;
+        }
+    }
+
+    perror("Error!");
     return -1;
 }
 
