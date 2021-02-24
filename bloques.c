@@ -1,7 +1,7 @@
 #include "bloques.h"
 
 int descriptor;
-//test
+
 int bmount(const char *camino) {
     descriptor = open(camino, O_RDWR|O_CREAT, 0666);
     
