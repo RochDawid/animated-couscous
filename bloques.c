@@ -2,8 +2,15 @@
 
 static int descriptor = 0;
 
+/*
+    bmount: para montar el dispositivo virtual, y dado que se trata de un fichero, esa acción consistirá en abrirlo
+    input: const char *camino
+    output: int descriptor
+    uses: umask,open,perror
+    used by: mi_mkfs->main
+*/
 int bmount(const char *camino) {
-    umask(000);
+    printf("%d\n",umask(000));
     descriptor = open(camino, O_RDWR|O_CREAT, 0666);
     
     if (descriptor == -1) {
@@ -15,6 +22,13 @@ int bmount(const char *camino) {
     return descriptor;
 }
 
+/*
+    bumount:
+    input: none
+    output: 0 on success / -1 on failure
+    uses: close,perror
+    used by: mi_mkfs->main
+*/
 int bumount() {
     if (close(descriptor) == -1) {
         // error
@@ -25,6 +39,13 @@ int bumount() {
     return 0;
 }
 
+/*
+    bwrite:
+    input: unsigned int nbloque, const void *buf
+    output: BLOCKSIZE on success / -1 on failure
+    uses: lseek,write,perror
+    used by: mi_mkfs->main
+*/
 int bwrite(unsigned int nbloque, const void *buf) {
     off_t desplazamiento = nbloque * BLOCKSIZE;
     if (lseek(descriptor,desplazamiento,SEEK_SET) != -1) {
@@ -38,6 +59,13 @@ int bwrite(unsigned int nbloque, const void *buf) {
     return -1;
 }
 
+/*
+    bread:
+    input: unsigned int nbloque, void *buf
+    output: BLOCKSIZE on success / -1 on failure
+    uses: lseek,sizeof,read,perror
+    used by:
+*/
 int bread(unsigned int nbloque, void *buf) {
     off_t desplazamiento = nbloque * BLOCKSIZE;
     if (lseek(descriptor,desplazamiento,SEEK_SET) != -1) {
