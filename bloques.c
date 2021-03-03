@@ -10,7 +10,7 @@ static int descriptor = 0;
     used by: mi_mkfs->main
 */
 int bmount(const char *camino) {
-    printf("%d\n",umask(000));
+    umask(000);
     descriptor = open(camino, O_RDWR|O_CREAT, 0666);
     
     if (descriptor == -1) {
@@ -23,7 +23,7 @@ int bmount(const char *camino) {
 }
 
 /*
-    bumount:
+    bumount: desmonta el dispositivo virtual
     input: none
     output: 0 on success / -1 on failure
     uses: close,perror
@@ -40,7 +40,7 @@ int bumount() {
 }
 
 /*
-    bwrite:
+    bwrite: escribe 1 bloque en el dispositivo virtual, en el bloque físico especificado por nbloque
     input: unsigned int nbloque, const void *buf
     output: BLOCKSIZE on success / -1 on failure
     uses: lseek,write,perror
@@ -49,7 +49,6 @@ int bumount() {
 int bwrite(unsigned int nbloque, const void *buf) {
     off_t desplazamiento = nbloque * BLOCKSIZE;
     if (lseek(descriptor,desplazamiento,SEEK_SET) != -1) {
-        //unsigned int nbytes = (unsigned int)sizeof(*buf);
         if (write(descriptor,buf,BLOCKSIZE) >= 0) {
             return BLOCKSIZE;
         }
@@ -60,7 +59,7 @@ int bwrite(unsigned int nbloque, const void *buf) {
 }
 
 /*
-    bread:
+    bread: lee 1 bloque en el dispositivo virtual, en el bloque físico especificado por nbloque
     input: unsigned int nbloque, void *buf
     output: BLOCKSIZE on success / -1 on failure
     uses: lseek,sizeof,read,perror
