@@ -10,7 +10,7 @@ static int descriptor = 0;
     used by: mi_mkfs->main
 */
 int bmount(const char *camino) {
-    printf("%d\n",umask(000));
+    umask(000);
     descriptor = open(camino, O_RDWR|O_CREAT, 0666);
     
     if (descriptor == -1) {
