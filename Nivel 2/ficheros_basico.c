@@ -38,9 +38,15 @@ int initMB() {
     unsigned char buf[BLOCKSIZE];
     memset(buf,0,BLOCKSIZE);
     struct superbloque SB;
-    bread(posSB,&SB);
+    if (bread(posSB,&SB) == -1) {
+        perror("Error leyendo dispositivo virtual");
+        return -1;
+    }
     for (int i = SB.posPrimerBloqueMB;i <= SB.posUltimoBloqueMB;i++) {
-        bwrite(i,buf);
+        if (bwrite(i,buf) == -1) {
+            perror("Error escribiendo en dispositivo virtual");
+            return -1;
+        }
     }
     
     return 0;
@@ -49,7 +55,10 @@ int initMB() {
 int initAI() {
     struct inodo inodos[BLOCKSIZE/INODOSIZE];
     struct superbloque SB;
-    bread(posSB,&SB);
+    if (bread(posSB,&SB) == -1) {
+        perror("Error leyendo dispositivo virtual");
+        return -1;
+    }
     int contInodos = SB.posPrimerInodoLibre + 1;
     for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++) {
         for (int j = 0; j <= BLOCKSIZE / INODOSIZE; j++) {
