@@ -30,5 +30,7 @@ int main() {
 
         printf("RECORRIDO LISTA ENLAZADA DE INODOS LIBRES");
 
+    } else {
+        perror("Error montando dispositivo virtual");
     }
 }
