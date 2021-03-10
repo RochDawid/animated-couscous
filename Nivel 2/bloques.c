@@ -77,4 +77,3 @@ int bread(unsigned int nbloque, void *buf) {
     perror("Error!");
     return -1;
 }
-

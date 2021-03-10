@@ -26,12 +26,12 @@ int main() {
         printf("\nRECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
 
         struct inodo arInodos[BLOCKSIZE/INODOSIZE];
-        for (int i = sb.posPrimerBloqueAI; i <= sb.posUltimoBloqueAI; i++) {
+        for (int i = sb.posPrimerBloqueAI; i < sb.posUltimoBloqueAI; i++) {
             if (bread(i,arInodos) == -1) {
                 perror("Error leyendo");
                 return -1;
             }
-            for (int j = 0; j <= (BLOCKSIZE/INODOSIZE); j++) {
+            for (int j = 0; j <= sb.cantInodosLibres; j++) {
                 printf("%d\n",arInodos[j].punterosDirectos[0]);
             }
         }

@@ -31,6 +31,20 @@ int initSB(unsigned int nbloques, unsigned int ninodos) {
     SB.totBloques = nbloques;
     SB.totInodos = ninodos;
 
+    printf("\nDATOS DEL SUPERBLOQUE INITSB\n");
+        printf("posPrimerBloqueMB = %d\n",SB.posPrimerBloqueMB);
+        printf("posUltimoBloqueMB = %d\n",SB.posUltimoBloqueMB);
+        printf("posPrimerBloqueAI = %d\n",SB.posPrimerBloqueAI);
+        printf("posUltimoBloqueAI = %d\n",SB.posUltimoBloqueAI);
+        printf("posPrimerBloqueDatos = %d\n",SB.posPrimerBloqueDatos);
+        printf("posUltimoBloqueDatos = %d\n",SB.posUltimoBloqueDatos);
+        printf("posInodoRaiz = %d\n",SB.posInodoRaiz);
+        printf("posPrimerInodoLibre = %d\n",SB.posPrimerInodoLibre);
+        printf("cantBloquesLibres = %d\n",SB.cantBloquesLibres);
+        printf("cantInodosLibres = %d\n",SB.cantInodosLibres);
+        printf("totBloques = %d\n",SB.totBloques);
+        printf("totInodos = %d\n",SB.totInodos);
+
     return bwrite(posSB,&SB);
 }
 
@@ -42,13 +56,43 @@ int initMB() {
         perror("Error leyendo dispositivo virtual");
         return -1;
     }
-    for (int i = SB.posPrimerBloqueMB;i <= SB.posUltimoBloqueMB;i++) {
+
+    printf("\nDATOS DEL SUPERBLOQUE INITMB ANTES\n");
+        printf("posPrimerBloqueMB = %d\n",SB.posPrimerBloqueMB);
+        printf("posUltimoBloqueMB = %d\n",SB.posUltimoBloqueMB);
+        printf("posPrimerBloqueAI = %d\n",SB.posPrimerBloqueAI);
+        printf("posUltimoBloqueAI = %d\n",SB.posUltimoBloqueAI);
+        printf("posPrimerBloqueDatos = %d\n",SB.posPrimerBloqueDatos);
+        printf("posUltimoBloqueDatos = %d\n",SB.posUltimoBloqueDatos);
+        printf("posInodoRaiz = %d\n",SB.posInodoRaiz);
+        printf("posPrimerInodoLibre = %d\n",SB.posPrimerInodoLibre);
+        printf("cantBloquesLibres = %d\n",SB.cantBloquesLibres);
+        printf("cantInodosLibres = %d\n",SB.cantInodosLibres);
+        printf("totBloques = %d\n",SB.totBloques);
+        printf("totInodos = %d\n",SB.totInodos);
+
+
+    for (int i = SB.posPrimerBloqueMB;i < SB.posUltimoBloqueMB;i++) {
         if (bwrite(i,buf) == -1) {
             perror("Error escribiendo en dispositivo virtual");
             return -1;
         }
     }
-    
+
+    printf("\nDATOS DEL SUPERBLOQUE INITMB DESPUÉS\n");
+        printf("posPrimerBloqueMB = %d\n",SB.posPrimerBloqueMB);
+        printf("posUltimoBloqueMB = %d\n",SB.posUltimoBloqueMB);
+        printf("posPrimerBloqueAI = %d\n",SB.posPrimerBloqueAI);
+        printf("posUltimoBloqueAI = %d\n",SB.posUltimoBloqueAI);
+        printf("posPrimerBloqueDatos = %d\n",SB.posPrimerBloqueDatos);
+        printf("posUltimoBloqueDatos = %d\n",SB.posUltimoBloqueDatos);
+        printf("posInodoRaiz = %d\n",SB.posInodoRaiz);
+        printf("posPrimerInodoLibre = %d\n",SB.posPrimerInodoLibre);
+        printf("cantBloquesLibres = %d\n",SB.cantBloquesLibres);
+        printf("cantInodosLibres = %d\n",SB.cantInodosLibres);
+        printf("totBloques = %d\n",SB.totBloques);
+        printf("totInodos = %d\n",SB.totInodos);
+
     return 0;
 }
 
@@ -60,11 +104,26 @@ int initAI() {
         return -1;
     }
     int contInodos = SB.posPrimerInodoLibre + 1;
-    for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++) {
-        for (int j = 0; j <= BLOCKSIZE / INODOSIZE; j++) {
-            inodos[i].tipo = 'l';
+
+    printf("\nDATOS DEL SUPERBLOQUE INITAI ANTES\n");
+        printf("posPrimerBloqueMB = %d\n",SB.posPrimerBloqueMB);
+        printf("posUltimoBloqueMB = %d\n",SB.posUltimoBloqueMB);
+        printf("posPrimerBloqueAI = %d\n",SB.posPrimerBloqueAI);
+        printf("posUltimoBloqueAI = %d\n",SB.posUltimoBloqueAI);
+        printf("posPrimerBloqueDatos = %d\n",SB.posPrimerBloqueDatos);
+        printf("posUltimoBloqueDatos = %d\n",SB.posUltimoBloqueDatos);
+        printf("posInodoRaiz = %d\n",SB.posInodoRaiz);
+        printf("posPrimerInodoLibre = %d\n",SB.posPrimerInodoLibre);
+        printf("cantBloquesLibres = %d\n",SB.cantBloquesLibres);
+        printf("cantInodosLibres = %d\n",SB.cantInodosLibres);
+        printf("totBloques = %d\n",SB.totBloques);
+        printf("totInodos = %d\n",SB.totInodos);
+
+    for (int i = SB.posPrimerBloqueAI; i < SB.posUltimoBloqueAI; i++) {
+        for (int j = 0; j <= BLOCKSIZE/INODOSIZE; j++) {
+            inodos[j].tipo = 'l';
             if (contInodos < SB.totInodos) {
-                inodos[i].punterosDirectos[0] = contInodos;
+                inodos[j].punterosDirectos[0] = contInodos;
                 contInodos++;
             }
             else {
@@ -76,6 +135,20 @@ int initAI() {
             return -1;
         }
     }
+
+    printf("\nDATOS DEL SUPERBLOQUE INITAI DESPUÉS\n");
+        printf("posPrimerBloqueMB = %d\n",SB.posPrimerBloqueMB);
+        printf("posUltimoBloqueMB = %d\n",SB.posUltimoBloqueMB);
+        printf("posPrimerBloqueAI = %d\n",SB.posPrimerBloqueAI);
+        printf("posUltimoBloqueAI = %d\n",SB.posUltimoBloqueAI);
+        printf("posPrimerBloqueDatos = %d\n",SB.posPrimerBloqueDatos);
+        printf("posUltimoBloqueDatos = %d\n",SB.posUltimoBloqueDatos);
+        printf("posInodoRaiz = %d\n",SB.posInodoRaiz);
+        printf("posPrimerInodoLibre = %d\n",SB.posPrimerInodoLibre);
+        printf("cantBloquesLibres = %d\n",SB.cantBloquesLibres);
+        printf("cantInodosLibres = %d\n",SB.cantInodosLibres);
+        printf("totBloques = %d\n",SB.totBloques);
+        printf("totInodos = %d\n",SB.totInodos);
 
     return 0;
 }

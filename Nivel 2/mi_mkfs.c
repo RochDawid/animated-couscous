@@ -1,12 +1,11 @@
 #include "ficheros_basico.h"
 
 int main(int argc, char **argv) {
-    int nbloques = atoi(argv[2]);
-
     if (bmount(argv[1]) != -1) {
         unsigned char buf[BLOCKSIZE];
         memset(buf,0,BLOCKSIZE);
-        int ninodos = nbloques/4;
+        unsigned int nbloques = atoi(argv[2]);
+        unsigned int ninodos = nbloques/4;
         initSB(nbloques,ninodos);
         initMB();
         initAI();
