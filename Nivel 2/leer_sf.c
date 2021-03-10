@@ -24,8 +24,8 @@ int main() {
         printf("totBloques = %d\n",sb.totBloques);
         printf("totInodos = %d\n",sb.totInodos);
 
-        printf("sizeof struct superbloque: %d\n",(int)sizeof(sb));
-        printf("sizeof struct inodo: %d\n",(int)sizeof(in));
+        printf("sizeof struct superbloque: %d\n",(int) sizeof(sb));
+        printf("sizeof struct inodo: %d\n",(int) sizeof(in));
 
         printf("\nRECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
 
