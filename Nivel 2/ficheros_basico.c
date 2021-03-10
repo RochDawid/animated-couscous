@@ -30,34 +30,40 @@ int initSB(unsigned int nbloques, unsigned int ninodos) {
     SB.cantInodosLibres = ninodos;
     SB.totBloques = nbloques;
     SB.totInodos = ninodos;
-    //struct superbloque *pSB;
-    //*pSB = SB;
-    bwrite(posSB,&SB);
+
+    return bwrite(posSB,&SB);
 }
 
 int initMB() {
     unsigned char buf[BLOCKSIZE];
     memset(buf,0,BLOCKSIZE);
     struct superbloque SB;
+    bread(posSB,&SB);
     for (int i = SB.posPrimerBloqueMB;i <= SB.posUltimoBloqueMB;i++) {
         bwrite(i,buf);
     }
+    
+    return 0;
 }
 
 int initAI() {
     struct inodo inodos[BLOCKSIZE/INODOSIZE];
     struct superbloque SB;
-
+    bread(posSB,&SB);
     int contInodos = SB.posPrimerInodoLibre + 1;
-    for (int i = SB.posPrimerBloqueAI;i <= SB.posUltimoBloqueAI;i++) {
-        for (int j = 0;j <= BLOCKSIZE/INODOSIZE;j++) {
+    for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++) {
+        for (int j = 0; j <= BLOCKSIZE / INODOSIZE; j++) {
             inodos[i].tipo = 'l';
             if (contInodos < SB.totInodos) {
-                inodos[i].punterosDirectos[j] = 
+                inodos[i].punterosDirectos[0] = contInodos;
                 contInodos++;
-            } else {
-                
+            }
+            else {
+                inodos[j].punterosDirectos[0] = UINT_MAX;
             }
         }
+        bwrite(i, inodos);
     }
+
+    return 0;
 }

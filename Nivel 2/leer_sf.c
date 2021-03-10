@@ -6,9 +6,7 @@ int main() {
     struct inodo in;
     
     if (descriptor != -1) {
-        for (int i=0;i<tamSB; i++) {
-            bread(i,&sb);
-        }
+        bread(posSB,&sb);
         for (int i=sb.posPrimerBloqueAI;i<sb.posUltimoBloqueAI; i++) {
             bread(i,&in);
         }
@@ -26,8 +24,8 @@ int main() {
         printf("totBloques = %d\n",sb.totBloques);
         printf("totInodos = %d\n",sb.totInodos);
 
-        printf("sizeof struct superbloque: %d\n",sizeof(sb));
-        printf("sizeof struct inodo: %d\n",sizeof(in));
+        printf("sizeof struct superbloque: %d\n",(int)sizeof(sb));
+        printf("sizeof struct inodo: %d\n",(int)sizeof(in));
 
         printf("\nRECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
 
@@ -36,6 +34,7 @@ int main() {
             bread(i,arInodos);
             printf(" %d ",arInodos[i-sb.posPrimerInodoLibre].punterosDirectos[0]);
         }
+        bumount();
     } else {
         perror("Error montando dispositivo virtual");
     }
