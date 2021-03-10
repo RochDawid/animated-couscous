@@ -30,9 +30,9 @@ int initSB(unsigned int nbloques, unsigned int ninodos) {
     SB.cantInodosLibres = ninodos;
     SB.totBloques = nbloques;
     SB.totInodos = ninodos;
-    struct superbloque *pSB;
-    *pSB = SB;
-    bwrite(posSB,pSB);
+    //struct superbloque *pSB;
+    //*pSB = SB;
+    bwrite(posSB,&SB);
 }
 
 int initMB() {
@@ -46,9 +46,14 @@ int initMB() {
 
 int initAI() {
     struct inodo inodo[BLOCKSIZE/INODOSIZE];
-    int numInodo;
-    struct inodo buf[BLOCKSIZE];
-    memset(buf,0,BLOCKSIZE);
     struct superbloque SB;
-    int primeraPos = SB.posPrimerBloqueAI;
+    for (int i = SB.posPrimerBloqueAI;i <= SB.posUltimoBloqueAI;i++) {
+        for (int j = 0;j <= BLOCKSIZE/INODOSIZE;j++) {
+            if (SB.totInodos) {
+
+            } else {
+
+            }
+        }
+    }
 }
