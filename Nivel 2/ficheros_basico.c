@@ -45,14 +45,18 @@ int initMB() {
 }
 
 int initAI() {
-    struct inodo inodo[BLOCKSIZE/INODOSIZE];
+    struct inodo inodos[BLOCKSIZE/INODOSIZE];
     struct superbloque SB;
+
+    int contInodos = SB.posPrimerInodoLibre + 1;
     for (int i = SB.posPrimerBloqueAI;i <= SB.posUltimoBloqueAI;i++) {
         for (int j = 0;j <= BLOCKSIZE/INODOSIZE;j++) {
-            if (SB.totInodos) {
-
+            inodos[i].tipo = 'l';
+            if (contInodos < SB.totInodos) {
+                inodos[i].punterosDirectos[j] = 
+                contInodos++;
             } else {
-
+                
             }
         }
     }
