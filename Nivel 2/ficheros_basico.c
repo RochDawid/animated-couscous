@@ -62,7 +62,10 @@ int initAI() {
                 inodos[j].punterosDirectos[0] = UINT_MAX;
             }
         }
-        bwrite(i, inodos);
+        if (bwrite(i, inodos) == -1) {
+            perror("Error escribiendo en dispositivo virtual");
+            return -1;
+        }
     }
 
     return 0;
