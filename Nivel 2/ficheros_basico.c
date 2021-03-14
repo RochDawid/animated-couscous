@@ -58,7 +58,7 @@ int initSB(unsigned int nbloques, unsigned int ninodos) {
 /*
     initMB: inicializa el mapa de bits
     input: none
-    output: 0
+    output: BLOCKSIZE on success / -1 on failure
     uses: bread(),bwrite()
     used by: mi_mkfs(), leer_sf()
 */
