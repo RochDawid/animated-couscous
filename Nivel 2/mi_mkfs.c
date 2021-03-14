@@ -7,12 +7,12 @@ int main(int argc, char **argv) {
         unsigned int nbloques = atoi(argv[2]);
         unsigned int ninodos = nbloques/4;
         
-/*          for (int i = 0;i < nbloques;i++) {
+        for (int i = 0;i < nbloques;i++) {
             if (bwrite(i,buf) == -1) {
                 perror("Error escribiendo");
                 return -1;
             }
-        }  */
+        }
         initSB(nbloques,ninodos);
         initMB();
         initAI();
