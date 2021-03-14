@@ -51,6 +51,7 @@ int initMB() {
     for (int i = SB.posPrimerBloqueMB;i < SB.posUltimoBloqueMB;i++) {
         bwrite(i,buf);
     }
+    // actualizar cantidad de bloques libres
     SB.cantBloquesLibres = SB.cantBloquesLibres - bitsMetadatos;
 
     return 0;
