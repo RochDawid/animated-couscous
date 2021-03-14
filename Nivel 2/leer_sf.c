@@ -31,6 +31,6 @@ int main() {
             printf("%d ",arInodos[j].punterosDirectos[0]);
         }
     }
-
+    printf("\n");
     return bumount();
 }
