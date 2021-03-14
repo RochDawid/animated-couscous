@@ -32,25 +32,22 @@ int initSB(unsigned int nbloques, unsigned int ninodos) {
     SB.totInodos = ninodos;
 
     printf("\nDATOS DEL SUPERBLOQUE INITSB\n");
-        printf("posPrimerBloqueMB = %d\n",SB.posPrimerBloqueMB);
-        printf("posUltimoBloqueMB = %d\n",SB.posUltimoBloqueMB);
-        printf("posPrimerBloqueAI = %d\n",SB.posPrimerBloqueAI);
-        printf("posUltimoBloqueAI = %d\n",SB.posUltimoBloqueAI);
-        printf("posPrimerBloqueDatos = %d\n",SB.posPrimerBloqueDatos);
-        printf("posUltimoBloqueDatos = %d\n",SB.posUltimoBloqueDatos);
-        printf("posInodoRaiz = %d\n",SB.posInodoRaiz);
-        printf("posPrimerInodoLibre = %d\n",SB.posPrimerInodoLibre);
-        printf("cantBloquesLibres = %d\n",SB.cantBloquesLibres);
-        printf("cantInodosLibres = %d\n",SB.cantInodosLibres);
-        printf("totBloques = %d\n",SB.totBloques);
-        printf("totInodos = %d\n",SB.totInodos);
-
+        printf("posPrimerBloqueMB = %u\n",SB.posPrimerBloqueMB);
+        printf("posUltimoBloqueMB = %u\n",SB.posUltimoBloqueMB);
+        printf("posPrimerBloqueAI = %u\n",SB.posPrimerBloqueAI);
+        printf("posUltimoBloqueAI = %u\n",SB.posUltimoBloqueAI);
+        printf("posPrimerBloqueDatos = %u\n",SB.posPrimerBloqueDatos);
+        printf("posUltimoBloqueDatos = %u\n",SB.posUltimoBloqueDatos);
+        printf("posInodoRaiz = %u\n",SB.posInodoRaiz);
+        printf("posPrimerInodoLibre = %u\n",SB.posPrimerInodoLibre);
+        printf("cantBloquesLibres = %u\n",SB.cantBloquesLibres);
+        printf("cantInodosLibres = %u\n",SB.cantInodosLibres);
+        printf("totBloques = %u\n",SB.totBloques);
+        printf("totInodos = %u\n",SB.totInodos);
     return bwrite(posSB,&SB);
 }
 
 int initMB() {
-    unsigned char buf[BLOCKSIZE];
-    memset(buf,0,BLOCKSIZE);
     struct superbloque SB;
     if (bread(posSB,&SB) == -1) {
         perror("Error leyendo dispositivo virtual");
@@ -58,20 +55,21 @@ int initMB() {
     }
 
     printf("\nDATOS DEL SUPERBLOQUE INITMB ANTES\n");
-        printf("posPrimerBloqueMB = %d\n",SB.posPrimerBloqueMB);
-        printf("posUltimoBloqueMB = %d\n",SB.posUltimoBloqueMB);
-        printf("posPrimerBloqueAI = %d\n",SB.posPrimerBloqueAI);
-        printf("posUltimoBloqueAI = %d\n",SB.posUltimoBloqueAI);
-        printf("posPrimerBloqueDatos = %d\n",SB.posPrimerBloqueDatos);
-        printf("posUltimoBloqueDatos = %d\n",SB.posUltimoBloqueDatos);
-        printf("posInodoRaiz = %d\n",SB.posInodoRaiz);
-        printf("posPrimerInodoLibre = %d\n",SB.posPrimerInodoLibre);
-        printf("cantBloquesLibres = %d\n",SB.cantBloquesLibres);
-        printf("cantInodosLibres = %d\n",SB.cantInodosLibres);
-        printf("totBloques = %d\n",SB.totBloques);
-        printf("totInodos = %d\n",SB.totInodos);
+        printf("posPrimerBloqueMB = %u\n",SB.posPrimerBloqueMB);
+        printf("posUltimoBloqueMB = %u\n",SB.posUltimoBloqueMB);
+        printf("posPrimerBloqueAI = %u\n",SB.posPrimerBloqueAI);
+        printf("posUltimoBloqueAI = %u\n",SB.posUltimoBloqueAI);
+        printf("posPrimerBloqueDatos = %u\n",SB.posPrimerBloqueDatos);
+        printf("posUltimoBloqueDatos = %u\n",SB.posUltimoBloqueDatos);
+        printf("posInodoRaiz = %u\n",SB.posInodoRaiz);
+        printf("posPrimerInodoLibre = %u\n",SB.posPrimerInodoLibre);
+        printf("cantBloquesLibres = %u\n",SB.cantBloquesLibres);
+        printf("cantInodosLibres = %u\n",SB.cantInodosLibres);
+        printf("totBloques = %u\n",SB.totBloques);
+        printf("totInodos = %u\n",SB.totInodos);
 
-
+    unsigned char buf[BLOCKSIZE];
+    memset(buf,0,BLOCKSIZE);
     for (int i = SB.posPrimerBloqueMB;i < SB.posUltimoBloqueMB;i++) {
         if (bwrite(i,buf) == -1) {
             perror("Error escribiendo en dispositivo virtual");
@@ -119,8 +117,9 @@ int initAI() {
         printf("totBloques = %d\n",SB.totBloques);
         printf("totInodos = %d\n",SB.totInodos);
 
-    for (int i = SB.posPrimerBloqueAI; i < SB.posUltimoBloqueAI; i++) {
-        for (int j = 0; j <= BLOCKSIZE/INODOSIZE; j++) {
+    
+    for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++) {
+        for (int j = 0; j < BLOCKSIZE/INODOSIZE; j++) {
             inodos[j].tipo = 'l';
             if (contInodos < SB.totInodos) {
                 inodos[j].punterosDirectos[0] = contInodos;

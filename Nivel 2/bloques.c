@@ -68,8 +68,8 @@ int bwrite(unsigned int nbloque, const void *buf) {
 int bread(unsigned int nbloque, void *buf) {
     off_t desplazamiento = nbloque * BLOCKSIZE;
     if (lseek(descriptor,desplazamiento,SEEK_SET) != -1) {
-        unsigned int nbytes = (unsigned int)sizeof(*buf);
-        if (read(descriptor,buf,nbytes) >= 0) {
+        //unsigned int nbytes = (unsigned int)sizeof(*buf);
+        if (read(descriptor,buf,BLOCKSIZE) >= 0) {
             return BLOCKSIZE;
         }
     }

@@ -6,15 +6,16 @@ int main(int argc, char **argv) {
         memset(buf,0,BLOCKSIZE);
         unsigned int nbloques = atoi(argv[2]);
         unsigned int ninodos = nbloques/4;
-        initSB(nbloques,ninodos);
-        initMB();
-        initAI();
-        for (int i = 0;i < nbloques;i++) {
+        
+/*          for (int i = 0;i < nbloques;i++) {
             if (bwrite(i,buf) == -1) {
                 perror("Error escribiendo");
                 return -1;
             }
-        }
+        }  */
+        initSB(nbloques,ninodos);
+        initMB();
+        initAI();
 
         return bumount();
     }

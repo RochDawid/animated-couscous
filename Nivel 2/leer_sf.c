@@ -20,21 +20,21 @@ int main() {
         printf("totBloques = %d\n",sb.totBloques);
         printf("totInodos = %d\n",sb.totInodos);
 
-        printf("sizeof struct superbloque: %d\n",(int) sizeof(sb));
+        printf("\nsizeof struct superbloque: %d\n",(int) sizeof(sb));
         printf("sizeof struct inodo: %d\n",(int) sizeof(struct inodo));
 
-        printf("\nRECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
+         printf("\nRECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
 
         struct inodo arInodos[BLOCKSIZE/INODOSIZE];
-        for (int i = sb.posPrimerBloqueAI; i < sb.posUltimoBloqueAI; i++) {
+        for (int i = sb.posPrimerBloqueAI; i <= sb.posUltimoBloqueAI; i++) {
             if (bread(i,arInodos) == -1) {
                 perror("Error leyendo");
                 return -1;
             }
-            for (int j = 0; j <= sb.cantInodosLibres; j++) {
-                printf("%d\n",arInodos[j].punterosDirectos[0]);
+            for (int j = 0; j < 8; j++) {
+                printf("%d ",arInodos[j].punterosDirectos[0]);
             }
-        }
+        } 
         bumount();
     } else {
         perror("Error montando dispositivo virtual");
