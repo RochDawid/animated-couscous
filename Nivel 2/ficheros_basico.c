@@ -40,8 +40,9 @@ int initMB() {
 
     unsigned char buf[BLOCKSIZE];
     memset(buf,0,BLOCKSIZE);
-    int posbyte = ((tamSB+tamMB(SB.totBloques)+tamAI(SB.totInodos)) / 8);
-    int posbit = ((tamSB+tamMB(SB.totBloques)+tamAI(SB.totInodos)) % 8);
+    int bitsMetadatos = (tamSB+tamMB(SB.totBloques)+tamAI(SB.totInodos));
+    int posbyte = (bitsMetadatos / 8);
+    int posbit = (bitsMetadatos % 8);
     unsigned char mascara = 128;
     for (int i=0;i<=posbyte;i++) {
         buf[i]=255;
@@ -50,6 +51,7 @@ int initMB() {
     for (int i = SB.posPrimerBloqueMB;i < SB.posUltimoBloqueMB;i++) {
         bwrite(i,buf);
     }
+    SB.cantBloquesLibres = SB.cantBloquesLibres - bitsMetadatos;
 
     return 0;
 }
