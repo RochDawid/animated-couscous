@@ -40,6 +40,13 @@ int initMB() {
 
     unsigned char buf[BLOCKSIZE];
     memset(buf,0,BLOCKSIZE);
+    int bytesMetadatos = ((tamSB+tamMB(SB.totBloques)+tamAI(SB.totInodos)) / 8);
+    int bitsSobrantes = ((tamSB+tamMB(SB.totBloques)+tamAI(SB.totInodos)) % 8);
+    unsigned char mascara = 128;
+    for (int i=0;i<=bytesMetadatos;i++) {
+        buf[i]=255;
+    }
+    buf[392]=224; // mascara etc
     for (int i = SB.posPrimerBloqueMB;i < SB.posUltimoBloqueMB;i++) {
         bwrite(i,buf);
     }
