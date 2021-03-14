@@ -91,7 +91,7 @@ int initMB() {
     // actualizar cantidad de bloques libres
     SB.cantBloquesLibres = SB.cantBloquesLibres - bitsMetadatos;
 
-    return 0;
+    return bwrite(posSB,&SB);
 }
 
 /*
