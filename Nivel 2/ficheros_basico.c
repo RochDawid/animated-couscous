@@ -37,18 +37,26 @@ int initSB(unsigned int nbloques, unsigned int ninodos) {
 int initMB() {
     struct superbloque SB;
     bread(posSB,&SB);
-
     unsigned char buf[BLOCKSIZE];
     memset(buf,0,BLOCKSIZE);
     int bitsMetadatos = (tamSB+tamMB(SB.totBloques)+tamAI(SB.totInodos));
     int posbyte = (bitsMetadatos / 8);
     int posbit = (bitsMetadatos % 8);
-    unsigned char mascara = 128;
+
     for (int i=0;i<=posbyte;i++) {
         buf[i]=255;
     }
-    buf[392]=224; // mascara etc
-    for (int i = SB.posPrimerBloqueMB;i < SB.posUltimoBloqueMB;i++) {
+
+    int bits[] = {128,64,32,16,8,4,2,1};
+    int resultat = 0;
+
+    for (int i=0;i<posbit;i++) {
+        resultat += bits[i];
+    }
+
+    buf[posbyte+1]=resultat;
+    
+    for (int i = SB.posPrimerBloqueMB;i <= SB.posUltimoBloqueMB;i++) {
         bwrite(i,buf);
     }
     // actualizar cantidad de bloques libres
