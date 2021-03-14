@@ -7,9 +7,7 @@ int main(int argc, char **argv) {
         unsigned char buf[BLOCKSIZE];
         memset(buf,0,BLOCKSIZE); // inicializar a 0 el buffer
         for (int i = 0;i < nbloques;i++) {
-            if (bwrite(i,buf) == -1) { // si da error escribiendo
-                return -1; // lo devolvemos
-            }
+            bwrite(i,buf);
         }
 
         return bumount();

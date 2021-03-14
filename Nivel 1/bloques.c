@@ -14,8 +14,7 @@ int bmount(const char *camino) {
     descriptor = open(camino, O_RDWR|O_CREAT, 0666);
     
     if (descriptor == -1) {
-        // error
-        perror("Error!");
+        perror("Error montando el dispositivo virtual");
         return -1;
     }
 
@@ -31,8 +30,7 @@ int bmount(const char *camino) {
 */
 int bumount() {
     if (close(descriptor) == -1) {
-        // error
-        perror("Error!");
+        perror("Error desmontando el dispositivo virtual");
         return -1;
     }
     
@@ -54,7 +52,7 @@ int bwrite(unsigned int nbloque, const void *buf) {
         }
     }
 
-    perror("Error!");
+    perror("Error escribiendo en el dispositivo virtual");
     return -1;
 }
 
@@ -68,12 +66,11 @@ int bwrite(unsigned int nbloque, const void *buf) {
 int bread(unsigned int nbloque, void *buf) {
     off_t desplazamiento = nbloque * BLOCKSIZE;
     if (lseek(descriptor,desplazamiento,SEEK_SET) != -1) {
-        if (read(descriptor,buf,nbytes) >= 0) {
+        if (read(descriptor,buf,BLOCKSIZE) >= 0) {
             return BLOCKSIZE;
         }
     }
 
-    perror("Error!");
+    perror("Error leyendo del dispositivo virtual");
     return -1;
 }
-
