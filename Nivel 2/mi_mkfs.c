@@ -8,10 +8,7 @@ int main(int argc, char **argv) {
     unsigned int ninodos = nbloques/4;
         
     for (int i = 0;i < nbloques;i++) {
-        if (bwrite(i,buf) == -1) {
-            perror("Error escribiendo");
-        return -1;
-        }
+        bwrite(i,buf);
     }
     initSB(nbloques,ninodos);
     initMB();
