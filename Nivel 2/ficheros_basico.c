@@ -1,5 +1,12 @@
 #include "ficheros_basico.h"
 
+/*
+    tamMB: calcula el tamaño en bloques necesario para el mapa de bits
+    input: unsigned int nbloques
+    output: int tamMB
+    uses: -
+    used by: initSB()
+*/
 int tamMB(unsigned int nbloques) {
     int tamMB = (nbloques/8)/BLOCKSIZE;
     if ((nbloques/8) % BLOCKSIZE != 0) { // en caso que necesitemos más bloques para los bytes restantes
