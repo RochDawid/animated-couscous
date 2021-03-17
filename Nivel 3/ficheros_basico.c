@@ -138,7 +138,7 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
 
     unsigned char mascara = 128;
     posbyte = posbyte % BLOCKSIZE;
-    mascara >>= posbit;
+    mascara >>= posbit; // nos desplazamos al bit que hay que cambiar
     
     if (bit == 1) {
         bufferMB[posbyte] |= mascara; // poner bit a 1
@@ -147,4 +147,28 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
     }
 
     bwrite(nbloqueabs,bufferMB); // cargar cambios del superbloque
+}
+
+int leer_bit (unsigned int nbloque) {
+
+}
+
+int reservar_bloque() {
+
+}
+
+int liberar_bloque(unsigned int nbloque) {
+
+}
+
+int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
+
+}
+
+int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
+
+}
+
+int reservar_inodo(unsigned char tipo, unsigned char permisos) {
+
 }
