@@ -124,3 +124,21 @@ int initAI() {
 
     return 0;
 }
+
+int escribir_bit(unsigned int nbloque, unsigned int bit) {
+    struct superbloque SB;
+    unsigned char bufferMB[BLOCKSIZE];
+    struct inodo inodos[BLOCKSIZE/INODOSIZE];
+
+    bread(posSB,&SB);
+    int posbyte = nbloque / 8;
+    int posbit = nbloque % 8;
+    int nbloqueMB = posbyte / BLOCKSIZE;
+    int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
+
+    unsigned char mascara = 128;
+    posbyte = posbyte % BLOCKSIZE;
+    mascara >>= posbit;
+    bufferMB[posbyte] |= mascara; // para poner un bit a 1
+    bufferMB[posbyte] &= ~mascara; // para poner un bit a 0
+}
