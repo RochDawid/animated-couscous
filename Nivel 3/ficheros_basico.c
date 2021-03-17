@@ -141,4 +141,6 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
     mascara >>= posbit;
     bufferMB[posbyte] |= mascara; // para poner un bit a 1
     bufferMB[posbyte] &= ~mascara; // para poner un bit a 0
+
+    bwrite(nbloqueabs,bufferMB); // cargar cambios del superbloque
 }
