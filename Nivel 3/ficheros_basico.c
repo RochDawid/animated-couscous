@@ -154,7 +154,47 @@ int leer_bit (unsigned int nbloque) {
 }
 
 int reservar_bloque() {
+    struct superbloque SB;
+    bread(posSB,&SB);
+    if (SB.cantBloquesLibres != 0) {
+        unsigned char bufferaux[BLOCKSIZE];
+        unsigned char bufferMB[BLOCKSIZE];
+        memset(bufferaux,255,BLOCKSIZE);
+        unsigned int posBloqueMB = SB.posPrimerBloqueMB;
+        int encontrado = 0;
+        for (;posBloqueMB<(SB.posUltimoBloqueMB) && encontrado==0;posBloqueMB++) {
+            bread(posBloqueMB,bufferMB);
+            if (memcmp(bufferMB,bufferaux,BLOCKSIZE) != 0) { // primer byte con un 0 en el MB
+                encontrado = 1;
+            }
+        }
+        unsigned int posbyte;
+        encontrado = 0;
+        for (int i=0;i<BLOCKSIZE && encontrado==0;i++) {
+            if (bufferMB[i] < 255) {
+                posbyte = i;
+                encontrado = 1;
+            }
+        }
 
+        unsigned char mascara = 128;
+        unsigned int posbit = 0;
+        while (bufferMB[posbyte] & mascara) { // encontrar el primer bit a 0
+            bufferMB[posbyte] <<= 1; // desplazamiento de bits a la izquierda
+            posbit++;
+        }
+        unsigned int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
+        escribir_bit(nbloque, 1);
+        SB.cantBloquesLibres--;
+        bwrite(posSB,&SB);
+        memset(bufferaux,0,BLOCKSIZE);
+        bwrite(nbloque,bufferaux);
+        
+        return nbloque;
+    } else {
+        perror("No hay bloques libres en el dispositivo virtual");
+        return -1;
+    }
 }
 
 int liberar_bloque(unsigned int nbloque) {
