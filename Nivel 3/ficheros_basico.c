@@ -189,12 +189,12 @@ int reservar_bloque() {
         bwrite(posSB,&SB);
         memset(bufferaux,0,BLOCKSIZE);
         bwrite(nbloque,bufferaux);
-        
+
         return nbloque;
-    } else {
-        perror("No hay bloques libres en el dispositivo virtual");
-        return -1;
     }
+    
+    perror("No hay bloques libres en el dispositivo virtual");
+    return -1;
 }
 
 int liberar_bloque(unsigned int nbloque) {
