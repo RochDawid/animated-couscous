@@ -284,7 +284,17 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
     used by: mi_mkfs(), leer_sf()
 */
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
+    struct superbloque SB;
+    struct inodo inodos[BLOCKSIZE/INODOSIZE];
 
+    bread(posSB,&SB);
+    int bloqueInodo = SB.posPrimerBloqueAI + ninodo/(BLOCKSIZE/INODOSIZE);
+    int indiceInodo = ninodo%(BLOCKSIZE/INODOSIZE);
+
+    bread(bloqueInodo,inodos); // lectura del bloque de inodos
+    *inodo = inodos[indiceInodo];
+
+    return 0; 
 }
 
 /*
