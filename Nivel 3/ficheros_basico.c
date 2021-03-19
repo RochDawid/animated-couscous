@@ -125,6 +125,14 @@ int initAI() {
     return 0;
 }
 
+/*
+    escribir_bit: esta función escribe el valor indicado por el parámetro bit: 0 (libre) ó 
+		1 (ocupado) en un determinado bit del MB que representa el bloque nbloque.
+    input: unsigned int nbloque, unsigned int bit
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int escribir_bit(unsigned int nbloque, unsigned int bit) {
     struct superbloque SB;
     unsigned char bufferMB[BLOCKSIZE];
@@ -149,10 +157,24 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
     bwrite(nbloqueabs,bufferMB); // cargar cambios del superbloque
 }
 
+/*
+    leer_bit: lee un determinado bit del MB y devuelve el valor del bit leído.
+    input: unsigned int nbloque, unsigned int bit
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int leer_bit (unsigned int nbloque) {
 
 }
 
+/*
+    reservar_bloque: encuentra el primer bloque libre, consultando el MB, lo ocupa (con la ayuda de la función escribir_bit()) y devuelve su posición.
+    input: none
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int reservar_bloque() {
     struct superbloque SB;
     bread(posSB,&SB);
@@ -197,18 +219,48 @@ int reservar_bloque() {
     return -1;
 }
 
+/*
+    liberar_bloque:libera un bloque determinado
+    input: unsigned int nbloque
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int liberar_bloque(unsigned int nbloque) {
 
 }
 
+
+/*
+    escribir_inodo: escribe el contenido de una variable de tipo struct inodo en un determinado inodo del array de inodos, inodos.
+    input: unsigned int ninodo, struct inodo inodo
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
 
 }
 
+/*
+    leer_inodo: lee un determinado inodo del array de inodos para volcarlo en una variable de tipo struct inodo pasada por referencia.
+    input: unsigned int ninodo, struct inodo *inodo
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
 
 }
 
+/*
+    reservar_inodo: encuentra el primer inodo libre (dato almacenado en el superbloque), 
+		lo reserva (con la ayuda de la función escribir_inodo()), devuelve su número y actualiza la lista enlazada de inodos libres.
+    input: unsigned char tipo, unsigned char permisos
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {
 
 }
