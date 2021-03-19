@@ -154,7 +154,7 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
         bufferMB[posbyte] &= ~mascara; // poner bit a 0
     }
 
-    bwrite(nbloqueabs,bufferMB); // cargar cambios del superbloque
+    return bwrite(nbloqueabs,bufferMB); // cargar cambios del superbloque
 }
 
 /*
@@ -164,8 +164,24 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
     uses: bread(),bwrite()
     used by: mi_mkfs(), leer_sf()
 */
-int leer_bit (unsigned int nbloque) {
+char leer_bit (unsigned int nbloque) {
+    struct superbloque SB;
+    unsigned char bufferMB[BLOCKSIZE];
+    struct inodo inodos[BLOCKSIZE/INODOSIZE];
 
+    bread(posSB,&SB);
+    int posbyte = nbloque / 8;
+    int posbit = nbloque % 8;
+    int nbloqueMB = posbyte / BLOCKSIZE;
+    int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
+
+    unsigned char mascara = 128;
+    posbyte = posbyte % BLOCKSIZE;
+    mascara >>= posbit; // nos desplazamos al bit que hay que cambiar
+    mascara &= bufferMB[posbyte];
+    mascara >>= (7 - posbit);
+
+    return mascara;
 }
 
 /*
@@ -178,13 +194,14 @@ int leer_bit (unsigned int nbloque) {
 int reservar_bloque() {
     struct superbloque SB;
     bread(posSB,&SB);
+
     if (SB.cantBloquesLibres != 0) {
         unsigned char bufferaux[BLOCKSIZE];
         unsigned char bufferMB[BLOCKSIZE];
         memset(bufferaux,255,BLOCKSIZE);
         unsigned int posBloqueMB = SB.posPrimerBloqueMB;
         int encontrado = 0;
-        for (;posBloqueMB<(SB.posUltimoBloqueMB) && encontrado==0;posBloqueMB++) {
+        for (;(posBloqueMB<=SB.posUltimoBloqueMB) && encontrado==0;posBloqueMB++) {
             bread(posBloqueMB,bufferMB);
             if (memcmp(bufferMB,bufferaux,BLOCKSIZE) != 0) { // primer byte con un 0 en el MB
                 encontrado = 1;
@@ -201,10 +218,12 @@ int reservar_bloque() {
 
         unsigned char mascara = 128;
         unsigned int posbit = 0;
+
         while (bufferMB[posbyte] & mascara) { // encontrar el primer bit a 0
             bufferMB[posbyte] <<= 1; // desplazamiento de bits a la izquierda
             posbit++;
         }
+
         unsigned int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
         escribir_bit(nbloque, 1);
         SB.cantBloquesLibres--;
@@ -227,7 +246,13 @@ int reservar_bloque() {
     used by: mi_mkfs(), leer_sf()
 */
 int liberar_bloque(unsigned int nbloque) {
+    struct superbloque SB;
+    escribir_bit(nbloque, 0);
+    bread(posSB,&SB);
+    SB.cantBloquesLibres++;
+    bwrite(posSB,&SB);
 
+    return nbloque;
 }
 
 
@@ -239,7 +264,16 @@ int liberar_bloque(unsigned int nbloque) {
     used by: mi_mkfs(), leer_sf()
 */
 int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
+    struct superbloque SB;
+    struct inodo inodos[BLOCKSIZE/INODOSIZE];
 
+    bread(posSB,&SB);
+    int bloqueInodo = SB.posPrimerBloqueAI + ninodo/(BLOCKSIZE/INODOSIZE);
+    int indiceInodo = ninodo%(BLOCKSIZE/INODOSIZE);
+
+    bread(bloqueInodo,inodos); // lectura del bloque de inodos para conservar el valor del resto de inodos
+    inodos[indiceInodo] = inodo;
+    return bwrite(bloqueInodo, inodos);
 }
 
 /*
