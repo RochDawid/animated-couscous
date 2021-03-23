@@ -306,5 +306,32 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
     used by: mi_mkfs(), leer_sf()
 */
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {
+    struct superbloque SB;
+    
+    bread(posSB,&SB);
+    if (SB.cantInodosLibres != 0) {
+        struct inodo inodo;
 
+        unsigned int posInodoReservado = SB.posPrimerInodoLibre;
+
+        SB.posPrimerInodoLibre = SB.posPrimerInodoLibre + 1; // TODO: hacer que apunte al siguiente inodo libre
+
+        inodo.permisos = permisos;
+        inodo.tipo = tipo;
+        inodo.nlinks = 1;
+        inodo.tamEnBytesLog = 0;
+        inodo.atime = inodo.ctime = inodo.mtime = NULL;
+        inodo.numBloquesOcupados = 0;
+        inodo.punterosDirectos = 0;
+        inodo.punterosIndirectos = 0;
+
+        escribir_inodo(posInodoReservado, inodo);
+        SB.cantInodosLibres--;
+        bwrite(posSB,&SB);
+
+        return posInodoReservado;
+    }
+    
+    printf("Error: no hay inodos libres");
+    return -1;
 }
