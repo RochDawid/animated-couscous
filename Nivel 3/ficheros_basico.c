@@ -170,8 +170,8 @@ char leer_bit (unsigned int nbloque) {
     bread(posSB,&SB);
     int posbyte = nbloque / 8;
     int posbit = nbloque % 8;
-    int nbloqueMB = posbyte / BLOCKSIZE;
-    int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
+    //int nbloqueMB = posbyte / BLOCKSIZE;
+    //int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
 
     unsigned char mascara = 128;
     posbyte = posbyte % BLOCKSIZE;
@@ -305,30 +305,29 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
 */
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     struct superbloque SB;
-    
     bread(posSB,&SB);
     if (SB.cantInodosLibres != 0) {
         struct inodo inodo;
         unsigned int posInodoReservado = SB.posPrimerInodoLibre;
 
         // hacemos que el primer inodo libre sea el siguiente al que vamos a coger
-        SB.posPrimerInodoLibre = SB.posPrimerInodoLibre + INODOSIZE; // TODO: comprobar que apunte al siguiente inodo libre
+        //SB.posPrimerInodoLibre = SB.posPrimerInodoLibre + INODOSIZE; // TODO: comprobar que apunte al siguiente inodo libre
+        leer_inodo(posInodoReservado,&inodo);
+        SB.posPrimerInodoLibre = inodo.punterosDirectos[0];
 
         // definimos el inodo con sus respectivos atributos
         inodo.permisos = permisos;
         inodo.tipo = tipo;
         inodo.nlinks = 1;
         inodo.tamEnBytesLog = 0;
-        inodo.atime = inodo.ctime = inodo.mtime = NULL;
+        inodo.atime = inodo.ctime = inodo.mtime = (time_t) NULL;
         inodo.numBloquesOcupados = 0;
-        memset(inodo.punterosDirectos,0,INODOSIZE*12);
-        memset(inodo.punterosIndirectos,0,INODOSIZE*3);
-
+        memset(inodo.punterosDirectos,0,sizeof(unsigned int)*12);
+        memset(inodo.punterosIndirectos,0,sizeof(unsigned int)*3);
         // escribimos el inodo en la posición correspondiente
         escribir_inodo(posInodoReservado, inodo);
         SB.cantInodosLibres--; // reducimos el número de inodos libres en una unidad
         bwrite(posSB,&SB); // guardamos los cambios hechos al superbloque
-
         return posInodoReservado;
     }
     
