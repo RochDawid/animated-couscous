@@ -136,7 +136,6 @@ int initAI() {
 int escribir_bit(unsigned int nbloque, unsigned int bit) {
     struct superbloque SB;
     unsigned char bufferMB[BLOCKSIZE];
-    struct inodo inodos[BLOCKSIZE/INODOSIZE];
 
     bread(posSB,&SB);
     int posbyte = nbloque / 8;
@@ -167,7 +166,6 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
 char leer_bit (unsigned int nbloque) {
     struct superbloque SB;
     unsigned char bufferMB[BLOCKSIZE];
-    struct inodo inodos[BLOCKSIZE/INODOSIZE];
 
     bread(posSB,&SB);
     int posbyte = nbloque / 8;
@@ -314,7 +312,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
         unsigned int posInodoReservado = SB.posPrimerInodoLibre;
 
         // hacemos que el primer inodo libre sea el siguiente al que vamos a coger
-        SB.posPrimerInodoLibre = SB.posPrimerInodoLibre + 1; // TODO: comprobar que apunte al siguiente inodo libre
+        SB.posPrimerInodoLibre = SB.posPrimerInodoLibre + INODOSIZE; // TODO: comprobar que apunte al siguiente inodo libre
 
         // definimos el inodo con sus respectivos atributos
         inodo.permisos = permisos;
@@ -323,8 +321,8 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
         inodo.tamEnBytesLog = 0;
         inodo.atime = inodo.ctime = inodo.mtime = NULL;
         inodo.numBloquesOcupados = 0;
-        inodo.punterosDirectos = 0;
-        inodo.punterosIndirectos = 0;
+        memset(inodo.punterosDirectos,0,INODOSIZE*12);
+        memset(inodo.punterosIndirectos,0,INODOSIZE*3);
 
         // escribimos el inodo en la posición correspondiente
         escribir_inodo(posInodoReservado, inodo);

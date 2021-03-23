@@ -32,5 +32,40 @@ int main() {
         }
     }
     printf("\n");
+
+    unsigned int nbloque = reservar_bloque();
+
+    bread(posSB,&sb);
+    printf("DATOS DEL SUPERBLOQUE\n");
+    printf("posPrimerBloqueMB = %d\n",sb.posPrimerBloqueMB);
+    printf("posUltimoBloqueMB = %d\n",sb.posUltimoBloqueMB);
+    printf("posPrimerBloqueAI = %d\n",sb.posPrimerBloqueAI);
+    printf("posUltimoBloqueAI = %d\n",sb.posUltimoBloqueAI);
+    printf("posPrimerBloqueDatos = %d\n",sb.posPrimerBloqueDatos);
+    printf("posUltimoBloqueDatos = %d\n",sb.posUltimoBloqueDatos);
+    printf("posInodoRaiz = %d\n",sb.posInodoRaiz);
+    printf("posPrimerInodoLibre = %d\n",sb.posPrimerInodoLibre);
+    printf("cantBloquesLibres = %d\n",sb.cantBloquesLibres);
+    printf("cantInodosLibres = %d\n",sb.cantInodosLibres);
+    printf("totBloques = %d\n",sb.totBloques);
+    printf("totInodos = %d\n",sb.totInodos);
+
+    liberar_bloque(nbloque);
+
+    bread(posSB,&sb);
+    printf("DATOS DEL SUPERBLOQUE\n");
+    printf("posPrimerBloqueMB = %d\n",sb.posPrimerBloqueMB);
+    printf("posUltimoBloqueMB = %d\n",sb.posUltimoBloqueMB);
+    printf("posPrimerBloqueAI = %d\n",sb.posPrimerBloqueAI);
+    printf("posUltimoBloqueAI = %d\n",sb.posUltimoBloqueAI);
+    printf("posPrimerBloqueDatos = %d\n",sb.posPrimerBloqueDatos);
+    printf("posUltimoBloqueDatos = %d\n",sb.posUltimoBloqueDatos);
+    printf("posInodoRaiz = %d\n",sb.posInodoRaiz);
+    printf("posPrimerInodoLibre = %d\n",sb.posPrimerInodoLibre);
+    printf("cantBloquesLibres = %d\n",sb.cantBloquesLibres);
+    printf("cantInodosLibres = %d\n",sb.cantInodosLibres);
+    printf("totBloques = %d\n",sb.totBloques);
+    printf("totInodos = %d\n",sb.totInodos);
+    
     return bumount();
 }
