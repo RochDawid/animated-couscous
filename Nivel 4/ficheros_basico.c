@@ -359,7 +359,7 @@ int obtener_nRangoBL(struct inodo *inodo,unsigned int nblogico,unsigned int *ptr
     }
 }
 
-int obtener_indice(int nblogico, int nivel_punteros) {
+int obtener_indice(unsigned int nblogico, unsigned int nivel_punteros) {
     if (nblogico<DIRECTOS) {
         return nblogico;
     } else if (nblogico < INDIRECTOS0) {
