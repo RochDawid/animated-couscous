@@ -28,7 +28,9 @@ int main() {
     for (int i = sb.posPrimerBloqueAI; i <= sb.posUltimoBloqueAI; i++) {
         bread(i,arInodos);
         for (int j = 0; j < (BLOCKSIZE/INODOSIZE); j++) {
-            printf("%d ",arInodos[j].punterosDirectos[0]);
+            if (arInodos[j].tipo == 'l') {
+                printf("%d ",arInodos[j].punterosDirectos[0]);
+            }
         }
     }
     printf("\n");

@@ -309,11 +309,13 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     if (SB.cantInodosLibres != 0) {
         struct inodo inodo;
         unsigned int posInodoReservado = SB.posPrimerInodoLibre;
+        printf("Posición del primer bloque libre de inodos pre: %d\n", posInodoReservado);
 
         // hacemos que el primer inodo libre sea el siguiente al que vamos a coger
-        //SB.posPrimerInodoLibre = SB.posPrimerInodoLibre + INODOSIZE; // TODO: comprobar que apunte al siguiente inodo libre
         leer_inodo(posInodoReservado,&inodo);
         SB.posPrimerInodoLibre = inodo.punterosDirectos[0];
+        printf("Posición del primer bloque libre de inodos post: %d\n", SB.posPrimerInodoLibre);
+
 
         // definimos el inodo con sus respectivos atributos
         inodo.permisos = permisos;
@@ -324,10 +326,12 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
         inodo.numBloquesOcupados = 0;
         memset(inodo.punterosDirectos,0,sizeof(unsigned int)*12);
         memset(inodo.punterosIndirectos,0,sizeof(unsigned int)*3);
+
         // escribimos el inodo en la posición correspondiente
         escribir_inodo(posInodoReservado, inodo);
         SB.cantInodosLibres--; // reducimos el número de inodos libres en una unidad
         bwrite(posSB,&SB); // guardamos los cambios hechos al superbloque
+
         return posInodoReservado;
     }
     
