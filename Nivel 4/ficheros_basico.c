@@ -354,7 +354,7 @@ int obtener_nRangoBL(struct inodo *inodo,unsigned int nblogico,unsigned int *ptr
         return 3;
     } else {
         *ptr = 0;
-        perror("Bloque lógco fuera de rango");
+        perror("Bloque lógico fuera de rango");
         return -1;
     }
 }
