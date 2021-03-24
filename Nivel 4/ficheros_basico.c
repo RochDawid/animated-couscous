@@ -338,3 +338,311 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     printf("Error: no hay inodos libres");
     return -1;
 }
+
+int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar){
+    unsigned int ptr = 0;
+    // leemos el inodo solicitado.
+    struct inodo inodo;
+    leer_inodo(ninodo, &inodo);
+    if (nblogico < DIRECTOS){ // el bloque logico es uno de los 12 primeros bloques logicos del inodo.
+        switch (reservar){
+            case 0:// modo consulta
+                if (inodo.punterosDirectos[nblogico] == 0) {// no tiene bloque físico asignado.
+                    return -1;
+                } else {
+                   ptr=inodo.punterosDirectos[nblogico];
+                }
+                break;
+            case 1:// modo escritura
+                if (inodo.punterosDirectos[nblogico] == 0) {// si no tiene bloque fisico le asignamos uno.
+                    inodo.punterosDirectos[nblogico] = reservar_bloque();
+                    ptr=inodo.punterosDirectos[nblogico];
+                    // aumentamos en uno el numero de bloques ocupados por el inodo en la zona de datos:
+                    inodo.numBloquesOcupados++;
+                    inodo.ctime = time(NULL);
+                    // escribimos el inodo con la info actualizada
+                    escribir_inodo(ninodo,inodo);
+                } else { // tiene bloque fisico asignado y lo devolvemos
+                    ptr=inodo.punterosDirectos[nblogico];
+                }
+                break;
+        }
+        //printf("nblogico= %d, ptr= %d\n", nblogico, ptr);
+        return ptr;
+    }
+    // PUNTERO INDIRECTOS 0
+    // El bloque logico lo encontramos en el rango de Indirectos 0, es decir, 
+    // está comprendido entre   el 0+12 y el 0+12+256-1: entre el 12 y el 267 
+    else if (nblogico < INDIRECTOS0) {
+        unsigned int punteros_nivel1[NPUNTEROS];
+        switch (reservar){
+            case 0:// modo consulta
+                if (inodo.punterosIndirectos[0] == 0) { // no hay bloque fisico asignado a punteros_nivel1.
+                    return -1;
+                } else { // ya existe el bloque de punteros_nivel1 y lo leemos del dispositivo
+                    bread(inodo.punterosIndirectos[0],punteros_nivel1);
+                    if (punteros_nivel1[nblogico-DIRECTOS] == 0) {
+                    // no hay bloque físico asignado al bloque lógico de datos.
+                        return -1;
+                    } else {
+                        ptr=punteros_nivel1[nblogico-DIRECTOS];
+                    }
+                }
+                break;
+            case 1:// modo escritura
+                if (inodo.punterosIndirectos[0] == 0){
+                // no hay bloque fisico asignado a punteros_nivel1, asi que creamos un buffer con 0s,  y
+                // reservamos un bloque donde salvarlo.
+                    memset(punteros_nivel1,0,BLOCKSIZE);//iniciamos a 0 los 256 punteros.
+                    inodo.punterosIndirectos[0] = reservar_bloque();
+                    // reservamos un nuevo bloque para los datos y anotamos su nº 
+                    // en el índice correspondiente de punteros_nivel1 
+                    punteros_nivel1[nblogico-DIRECTOS] = reservar_bloque();
+                    // aumentamos el numero de bloques ocupados por el inodo en la zona de datos.
+                    inodo.numBloquesOcupados+=2;
+                    inodo.ctime = time(NULL);
+                    bwrite(inodo.punterosIndirectos[0],punteros_nivel1);
+                    // devolvemos el bloque fisico de datos
+                    ptr=punteros_nivel1[nblogico-DIRECTOS];
+                } else { // existe el bloque de punteros_nivel1 y lo leemos del dispositivo
+                    bread(inodo.punterosIndirectos[0],punteros_nivel1);
+                    if (punteros_nivel1[nblogico-DIRECTOS] == 0){
+                        // no hay bloque fisico de datos asignado, entonces lo reservamos
+                        punteros_nivel1[nblogico-DIRECTOS] = reservar_bloque();
+                        // aumentamos el numero de bloques ocupados por el inodo en la zona de datos.
+                        inodo.numBloquesOcupados++;
+                        inodo.ctime = time(NULL);
+                        // salvamos el bloque de punteros_nivel1 en el dispositivo.
+                        bwrite(inodo.punterosIndirectos[0],punteros_nivel1);
+                        ptr=punteros_nivel1[nblogico-DIRECTOS]; // devolvemos el bloque fisico de datos.
+                    } else { // si existe el bloque fisico de datos lo devolvemos
+                        ptr=punteros_nivel1[nblogico-DIRECTOS];
+                    }
+                }
+                // escribimos en el dispositivo el inodo actualizado
+                escribir_inodo(ninodo,inodo);
+                break;
+        }
+        //printf("nblogico= %d, ptr= %d\n", nblogico, ptr);
+        return ptr;
+    }
+    // PUNTERO INDIRECTOS 1
+    // El bloque logico lo encontramos en el rango de Indirectos 1, es decir, 
+    // los comprendidos entre el 0+12+256 y el 0+12+256+256^2-1: entre el 268 y el 65.803.
+    else if (nblogico < INDIRECTOS1){
+        unsigned int punteros_nivel1[NPUNTEROS];
+        unsigned int punteros_nivel2[NPUNTEROS];
+        unsigned int indice_nivel1 = obtener_indice(nblogico, 1); // indice para punteros_nivel1
+        unsigned int indice_nivel2 = obtener_indice(nblogico, 2); // indice para punteros_nivel2
+        switch(reservar) {
+            case 0: // modo consulta
+                if (inodo.punterosIndirectos[1] == 0) { // no hay bloque fisico asignado a punteros_nivel2.
+                    return -1;
+                } else { // ya existe el bloque de punteros_nivel2 y lo leemos del dispositivo
+                    bread(inodo.punterosIndirectos[1],punteros_nivel2);
+                    if (punteros_nivel2[indice_nivel2] == 0) { // no hay bloque fisico asignado a punteros_nivel1.
+                        return -1;
+                    } else { // ya existe el bloque de punteros_nivel1 y lo leemos del dispositivo
+                        bread(punteros_nivel2[indice_nivel2],punteros_nivel1);
+                        if (punteros_nivel1[indice_nivel1] == 0) {
+                            // no hay bloque físico asignado al bloque lógico de datos.
+                            return -1;
+                        } else {
+                            ptr=punteros_nivel1[indice_nivel1]; // devolvemos el bloque fisico solicitado
+                        }
+                    }
+                }
+                break;
+            case 1:// modo escritura
+                if (inodo.punterosIndirectos[1] == 0){
+                // no hay bloque fisico asignado a punteros_nivel2, asi que llenamos un buffer con 0s,  y
+                // reservamos un bloque donde salvarlo. 
+                    memset(punteros_nivel2,0,BLOCKSIZE);
+                    inodo.punterosIndirectos[1] = reservar_bloque(); 
+                    // llenamos el buffer de punteros_nivel1 con 0s y reservamos un bloque para él, 
+                    // anotamos su nº  en el índice correspondiente de punteros_nivel2 
+                    memset(punteros_nivel1,0,BLOCKSIZE);
+                    punteros_nivel2[indice_nivel2] = reservar_bloque(); 
+                    // reservamos un nuevo bloque para los datos y anotamos su nº 
+                    // en el índice correspondiente de punteros_nivel1 
+                    punteros_nivel1[indice_nivel1] = reservar_bloque(); 
+                    // aumentamos el numero de bloques ocupados por el inodo en la zona de datos.
+                    inodo.numBloquesOcupados+=3;
+                    inodo.ctime = time(NULL);
+                    // salvamos los buffers de los bloques de punteros en el dispositivo
+                    bwrite(inodo.punterosIndirectos[1],punteros_nivel2);
+                    bwrite(punteros_nivel2[indice_nivel2],punteros_nivel1);
+                    // devolvemos el bloque fisico de datos
+                    ptr=punteros_nivel1[indice_nivel1];
+                } else { // existe el bloque de punteros_nivel2 y lo leemos del dispositivo
+                   bread(inodo.punterosIndirectos[1],punteros_nivel2);
+                   if (punteros_nivel2[indice_nivel2] == 0) { 
+                        // no hay bloque fisico de punteros_nivel1 asignado, entonces lo reservamos y
+                        // anotamos su nº  en el índice correspondiente de punteros_nivel2
+                        memset(punteros_nivel1,0,BLOCKSIZE);
+                        punteros_nivel2[indice_nivel2] = reservar_bloque();   
+                        // reservamos un nuevo bloque para los datos y anotamos su nº 
+                        // en el índice correspondiente de punteros_nivel1 
+                        punteros_nivel1[indice_nivel1] = reservar_bloque(); 
+                        // aumentamos el numero de bloques ocupados por el inodo en la zona de datos.
+                        inodo.numBloquesOcupados+=2;
+                        inodo.ctime = time(NULL);
+                        // salvamos los buffers de los bloques de punteros en el dispositivo
+                        bwrite(inodo.punterosIndirectos[1],punteros_nivel2);
+                        bwrite(punteros_nivel2[indice_nivel2],punteros_nivel1);
+                        // devolvemos el bloque fisico de datos
+                        ptr=punteros_nivel1[indice_nivel1];
+                    } else { // existe el bloque de punteros_nivel1 y lo leemos del dispositivo
+                        bread(punteros_nivel2[indice_nivel2],punteros_nivel1);    
+                        if (punteros_nivel1[indice_nivel1] == 0) {
+                            // no hay bloque físico asignado al bloque lógico de datos así que lo reservamos 
+                            // y anotamos su nº en el índice correspondiente de punteros_nivel1.
+                            punteros_nivel1[indice_nivel1] = reservar_bloque();
+                            // aumentamos en uno el numero de bloques ocupados por el inodo en la zona de datos.
+                            inodo.numBloquesOcupados++;
+                            inodo.ctime = time(NULL);
+                            // salvamos el bloque de punteros_nivel1 en el dispositivo
+                            bwrite(punteros_nivel2[indice_nivel2],punteros_nivel1);
+                            // devolvemos el bloque físico asignado a los datos
+                            ptr = punteros_nivel1[indice_nivel1];
+                        } else {
+                            ptr = punteros_nivel1[indice_nivel1];
+                        }
+                    }
+                }
+            // escribimos en el dispositivo el inodo actualizado
+            escribir_inodo(ninodo,inodo);
+            break;
+        }
+        //printf("nblogico= %d, ptr= %d\n", nblogico, ptr);
+        return ptr;
+    }
+    // PUNTERO INDIRECTOS 2
+    // El bloque logico lo encontramos en el rango de Indirectos 2, es decir, los comprendidos entre 
+    // el 0+12+256+256^2 y el 0+12+256+256^2+256^3-1: entre el 65.804 y el 16.843.019.
+    else if (nblogico < INDIRECTOS2){
+        unsigned int punteros_nivel1[NPUNTEROS];
+        unsigned int punteros_nivel2[NPUNTEROS];
+        unsigned int punteros_nivel3[NPUNTEROS];
+        unsigned int indice_nivel1 = obtener_indice(nblogico, 1); //indice para punteros_nivel1
+        unsigned int indice_nivel2 = obtener_indice(nblogico, 2); //indice para punteros_nivel2
+        unsigned int indice_nivel3 = obtener_indice(nblogico, 3); //indice para punteros_nivel3
+        switch(reservar){
+            case 0: //modo consulta
+                if (inodo.punterosIndirectos[2] == 0) { // no hay bloque fisico asignado a punteros_nivel3.
+                    return -1;
+                } else { // ya existe el bloque de punteros_nivel3 y lo leemos del dispositivo
+                    bread(inodo.punterosIndirectos[2],punteros_nivel3);
+                    if (punteros_nivel3[indice_nivel3] == 0) { // no hay bloque fisico asignado a punteros_nivel2.
+                    return -1;
+                    } else { // ya existe el bloque de punteros_nivel2 y lo leemos del dispositivo
+                        bread(punteros_nivel3[indice_nivel3],punteros_nivel2);
+                        if (punteros_nivel2[indice_nivel2] == 0) { // no hay bloque fisico asignado a punteros_nivel1.
+                            return -1;
+                        } else { // ya existe el bloque de punteros_nivel1 y lo leemos del dispositivo
+                            bread(punteros_nivel2[indice_nivel2],punteros_nivel1);
+                            if (punteros_nivel1[indice_nivel1] == 0) {
+                                // no hay bloque físico asignado al bloque lógico de datos.
+                                return -1;
+                            } else {
+                                ptr=punteros_nivel1[indice_nivel1]; // devolvemos el bloque fisico solicitado
+                            }
+                        }
+                    }
+                }
+                break;
+            case 1: //modo escritura
+                if (inodo.punterosIndirectos[2] == 0) {               
+                    // no hay bloque fisico asignado a punteros_nivel3, asi que llenamos un buffer con 0s,  y
+                    // reservamos un bloque donde salvarlo. 
+                    memset(punteros_nivel3,0,BLOCKSIZE);
+                    inodo.punterosIndirectos[2] = reservar_bloque();
+                    // llenamos el buffer de punteros_nivel2 con 0s y reservamos un bloque para él, 
+                    //anotamos su nº  en el índice correspondiente de punteros_nivel3 
+                    memset(punteros_nivel2,0,BLOCKSIZE);
+                    punteros_nivel3[indice_nivel3] = reservar_bloque();
+                    // llenamos el buffer de punteros_nivel1 con 0s y reservamos un bloque para él, 
+                    //anotamos su nº  en el índice correspondiente de punteros_nivel2 
+                    memset(punteros_nivel1,0,BLOCKSIZE);
+                    punteros_nivel2[indice_nivel2] = reservar_bloque();
+                    // reservamos un nuevo bloque para los datos y anotamos su nº 
+                    // en el índice correspondiente de punteros_nivel1 
+                    punteros_nivel1[indice_nivel1] = reservar_bloque();
+                    // aumentamos en uno el numero de bloques ocupados por el inodo en la zona de datos.
+                    inodo.numBloquesOcupados+=4;
+                    inodo.ctime = time(NULL);
+                    // salvamos los buffers de los bloques de punteros en el dispositivo
+                    bwrite(inodo.punterosIndirectos[2],punteros_nivel3);
+                    bwrite(punteros_nivel3[indice_nivel3],punteros_nivel2);
+                    bwrite(punteros_nivel2[indice_nivel2],punteros_nivel1);
+                    // devolvemos el bloque fisico de datos
+                    ptr=punteros_nivel1[indice_nivel1];
+                } else { // existe el bloque de punteros_nivel3 y lo leemos del dispositivo
+                    bread(inodo.punterosIndirectos[2],punteros_nivel3);
+                    if (punteros_nivel3[indice_nivel3] == 0) {
+                        // no hay bloque fisico de punteros_nivel2 asignado, entonces lo reservamos y
+                        // anotamos su nº  en el índice correspondiente de punteros_nivel3
+                        memset(punteros_nivel2,0,BLOCKSIZE);
+                        punteros_nivel3[indice_nivel3] = reservar_bloque();     
+                        // llenamos el buffer de punteros_nivel1 con 0s y reservamos un bloque para él, 
+                        // anotamos su nº  en el índice correspondiente de punteros_nivel2 
+                        memset(punteros_nivel1,0,BLOCKSIZE);
+                        punteros_nivel2[indice_nivel2] = reservar_bloque(); 
+                        // reservamos un nuevo bloque para los datos y anotamos su nº 
+                        // en el índice correspondiente de punteros_nivel1 
+                        punteros_nivel1[indice_nivel1] = reservar_bloque(); 
+                        // aumentamos el numero de bloques ocupados por el inodo en la zona de datos.
+                        inodo.numBloquesOcupados+=3;
+                        inodo.ctime = time(NULL);
+                        // salvamos los buffers de los bloques de punteros en el dispositivo
+                        bwrite(inodo.punterosIndirectos[2],punteros_nivel3);
+                        bwrite(punteros_nivel3[indice_nivel3],punteros_nivel2);
+                        bwrite(punteros_nivel2[indice_nivel2],punteros_nivel1);
+                        // devolvemos el bloque fisico de datos
+                        ptr=punteros_nivel1[indice_nivel1];
+                    } else { // existe el bloque de punteros_nivel2 y lo leemos del dispositivo
+                        bread(punteros_nivel3[indice_nivel3],punteros_nivel2);
+                        if (punteros_nivel2[indice_nivel2] == 0) {
+                            // no hay bloque fisico de punteros_nivel1 asignado, entonces lo reservamos y
+                            // anotamos su nº  en el índice correspondiente de punteros_nivel2
+                            memset(punteros_nivel1,0,BLOCKSIZE);
+                            punteros_nivel2[indice_nivel2] = reservar_bloque(); 
+                            // reservamos un nuevo bloque para los datos y anotamos su nº 
+                            // en el índice correspondiente de punteros_nivel1 
+                            punteros_nivel1[indice_nivel1] = reservar_bloque();                            
+                            // aumentamos el numero de bloques ocupados por el inodo en la zona de datos.
+                            inodo.numBloquesOcupados+=2;
+                            inodo.ctime = time(NULL);
+                            // salvamos los buffers de los bloques de punteros en el dispositivo
+                            bwrite(punteros_nivel3[indice_nivel3],punteros_nivel2);
+                            bwrite(punteros_nivel2[indice_nivel2],punteros_nivel1);
+                            // devolvemos el bloque fisico de datos
+                            ptr=punteros_nivel1[indice_nivel1];
+                        } else { // existe el bloque de punteros_nivel1 y lo leemos del dispositivo
+                            bread(punteros_nivel2[indice_nivel2],punteros_nivel1);
+                            if (punteros_nivel1[indice_nivel1] == 0){
+                                // no hay bloque físico asignado al bloque lógico de datos así que lo reservamos 
+                                // y anotamos su nº en el índice correspondiente de punteros_nivel1.
+                                punteros_nivel1[indice_nivel1] = reservar_bloque();                                
+                                //aumentamos el numero de bloques ocupados por el inodo en la zona de datos.
+                                inodo.numBloquesOcupados++;
+                                inodo.ctime = time(NULL);
+                                // salvamos el bloque de punteros_nivel1 en el dispositivo
+                                bwrite(punteros_nivel2[indice_nivel2],punteros_nivel1);
+                                // devolvemos el bloque físico asignado a los datos
+                                ptr=punteros_nivel1[indice_nivel1];
+                            } else {
+                                ptr=punteros_nivel1[indice_nivel1];
+                            }
+                        }
+                    }
+                }
+                // escribimos en el dispositivo el inodo actualizado
+                escribir_inodo(ninodo,inodo);
+                break;
+        }
+        //printf("nblogico= %d, ptr= %d\n", nblogico, ptr);
+        return ptr;
+    }
+    return ptr;
+}
