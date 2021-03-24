@@ -6,6 +6,12 @@
 
 #define INODOSIZE 128 // tamaño en bytes de un inodo
 
+#define NPUNTEROS (BLOCKSIZE / sizeof(unsigned int)) // 256
+#define DIRECTOS 12
+#define INDIRECTOS0 (NPUNTEROS + DIRECTOS)                            // 268
+#define INDIRECTOS1 (NPUNTEROS * NPUNTEROS + INDIRECTOS0)             // 65.804
+#define INDIRECTOS2 (NPUNTEROS * NPUNTEROS * NPUNTEROS + INDIRECTOS1) // 16.843.020
+
 int tamMB(unsigned int nbloques);
 int tamAI(unsigned int ninodos);
 int initSB(unsigned int nbloques, unsigned int ninodos);

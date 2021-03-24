@@ -339,6 +339,32 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     return -1;
 }
 
+int obtener_nRangoBL(struct inodo *inodo,unsigned int nblogico,unsigned int *ptr) {
+    
+}
+
+int obtener_indice(int nblogico, int nivel_punteros) {
+    if (nblogico<DIRECTOS) {
+        return nblogico;
+    } else if (nblogico < INDIRECTOS0) {
+        return nblogico-DIRECTOS;
+    } else if (nblogico < INDIRECTOS1) {
+        if (nivel_punteros == 2) {
+            return (nblogico-INDIRECTOS0) / NPUNTEROS;
+        } else if (nivel_punteros == 1) {
+            return (nblogico-INDIRECTOS0) % NPUNTEROS;
+        }
+    } else if (nblogico < INDIRECTOS2) {
+        if (nivel_punteros == 3) {
+            return (nblogico-INDIRECTOS1) / (NPUNTEROS*NPUNTEROS);
+        } else if (nivel_punteros == 2) {
+            return ((nblogico-INDIRECTOS1)%(NPUNTEROS*NPUNTEROS)) / NPUNTEROS;
+        } else if (nivel_punteros == 1) {
+            return ((nblogico-INDIRECTOS1)%(NPUNTEROS*NPUNTEROS)) % NPUNTEROS;
+        }
+    }
+}
+
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar){
     unsigned int ptr = 0;
     // leemos el inodo solicitado.
