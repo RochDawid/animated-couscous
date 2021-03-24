@@ -322,7 +322,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
         inodo.tipo = tipo;
         inodo.nlinks = 1;
         inodo.tamEnBytesLog = 0;
-        inodo.atime = inodo.ctime = inodo.mtime = (time_t) NULL;
+        inodo.atime = inodo.ctime = inodo.mtime = time(NULL);
         inodo.numBloquesOcupados = 0;
         memset(inodo.punterosDirectos,0,sizeof(unsigned int)*12);
         memset(inodo.punterosIndirectos,0,sizeof(unsigned int)*3);
