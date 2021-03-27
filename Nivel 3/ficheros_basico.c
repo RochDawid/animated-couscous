@@ -143,6 +143,7 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
     int nbloqueMB = posbyte / BLOCKSIZE;
     int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
 
+    bread(nbloqueabs, bufferMB);
     unsigned char mascara = 128;
     posbyte = posbyte % BLOCKSIZE;
     mascara >>= posbit; // nos desplazamos al bit que hay que cambiar
@@ -170,9 +171,10 @@ char leer_bit (unsigned int nbloque) {
     bread(posSB,&SB);
     int posbyte = nbloque / 8;
     int posbit = nbloque % 8;
-    //int nbloqueMB = posbyte / BLOCKSIZE;
-    //int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
+    int nbloqueMB = posbyte / BLOCKSIZE;
+    int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
 
+    bread(nbloqueabs,bufferMB);
     unsigned char mascara = 128;
     posbyte = posbyte % BLOCKSIZE;
     mascara >>= posbit; // nos desplazamos al bit que hay que cambiar
@@ -197,9 +199,9 @@ int reservar_bloque() {
         unsigned char bufferaux[BLOCKSIZE];
         unsigned char bufferMB[BLOCKSIZE];
         memset(bufferaux,255,BLOCKSIZE);
-        unsigned int posBloqueMB = SB.posPrimerBloqueMB;
         int encontrado = 0;
-        for (;(posBloqueMB<=SB.posUltimoBloqueMB) && encontrado==0;posBloqueMB++) {
+        unsigned int posBloqueMB = SB.posPrimerBloqueMB;
+        for (;(posBloqueMB<=SB.posUltimoBloqueMB) && encontrado==0;posBloqueMB++) { //estalviar int posant es memcmp a nes bucle
             bread(posBloqueMB,bufferMB);
             if (memcmp(bufferMB,bufferaux,BLOCKSIZE) != 0) { // primer byte con un 0 en el MB
                 encontrado = 1;
@@ -221,8 +223,9 @@ int reservar_bloque() {
             bufferMB[posbyte] <<= 1; // desplazamiento de bits a la izquierda
             posbit++;
         }
-
+        printf("posBloqueMB: %d, posbyte : %d, posbit : %d\n",posBloqueMB,posbyte,posbit);
         unsigned int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
+        printf("bloque : %d\n",nbloque);
         escribir_bit(nbloque, 1);
         SB.cantBloquesLibres--;
         bwrite(posSB,&SB);
