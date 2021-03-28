@@ -21,21 +21,7 @@ int main() {
 
     printf("\nsizeof struct superbloque: %d\n",(int) sizeof(sb));
     printf("sizeof struct inodo: %d\n",(int) sizeof(struct inodo));
-
-/*     printf("\nRECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
-
-    struct inodo arInodos[BLOCKSIZE/INODOSIZE];
-    for (int i = sb.posPrimerBloqueAI; i <= sb.posUltimoBloqueAI; i++) {
-        bread(i,arInodos);
-        for (int j = 0; j < (BLOCKSIZE/INODOSIZE); j++) {
-            if (arInodos[j].tipo == 'l') {
-                printf("%d ",arInodos[j].punterosDirectos[0]);
-            }
-        }
-    }
-    printf("\n"); */
-
-
+    
     unsigned int nbloque = reservar_bloque();
     bread(posSB,&sb);
     printf("\nRESERVAMOS UN BLOQUE Y LUEGO LO LIBERAMOS\n");
@@ -45,14 +31,32 @@ int main() {
     bread(posSB,&sb);
     printf("Liberamos ese bloque y después SB.cantBloquesLibres = %d\n",sb.cantBloquesLibres);
 
+    int testBits[] = {posSB,sb.posPrimerBloqueMB,sb.posUltimoBloqueMB,sb.posPrimerBloqueAI,sb.posUltimoBloqueAI,sb.posPrimerBloqueDatos,sb.posUltimoBloqueDatos};
+    printf("\nMAPA DE BITS CON BLOQUES DE METADATOS OCUPADOS\n");
+    for (int i = 0;i < 7;i++) {
+        printf("leer_bit(%d)= %d\n",testBits[i],leer_bit(testBits[i]));
+    }
+
     struct inodo inodo;
-    leer_inodo(0,&inodo);
+    leer_inodo(sb.posInodoRaiz,&inodo);
+    struct tm *ts;
+    char atime[80];
+    char mtime[80];
+    char ctime[80];
+
+    ts = localtime(&inodo.atime);
+    strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
+    ts = localtime(&inodo.mtime);
+    strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+    ts = localtime(&inodo.ctime);
+    strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
+
     printf("\nDATOS DEL DIRECTORIO RAIZ\n");
     printf("tipo: %c\n",inodo.tipo);
-    printf("permisos: %c\n",inodo.permisos);
-    printf("atime: \n");
-    printf("ctime: \n");
-    printf("mtime: \n");
+    printf("permisos: %d\n",inodo.permisos);
+    printf("atime: %s\n",atime);
+    printf("ctime: %s\n",ctime);
+    printf("mtime: %s\n",mtime);
     printf("nlinks: %d\n",inodo.nlinks);
     printf("tamEnBytesLog: %d\n",inodo.tamEnBytesLog);
     printf("numBloquesOcupados: %d\n",inodo.numBloquesOcupados);

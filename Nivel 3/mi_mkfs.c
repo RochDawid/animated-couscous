@@ -13,8 +13,7 @@ int main(int argc, char **argv) {
     initSB(nbloques,ninodos);
     initMB();
     initAI();
-
     reservar_inodo('d', 7);
-
+    
     return bumount();
 }

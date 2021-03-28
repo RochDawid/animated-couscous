@@ -63,16 +63,17 @@ int initSB(unsigned int nbloques, unsigned int ninodos) {
     used by: mi_mkfs(), leer_sf()
 */
 int initMB() {
-    struct superbloque SB;
+    /* struct superbloque SB;
     bread(posSB,&SB);
-    unsigned char buf[BLOCKSIZE];
-    memset(buf,0,BLOCKSIZE);
+    unsigned char bufferMB[BLOCKSIZE];
+    memset(bufferMB,0,BLOCKSIZE);
     int bitsMetadatos = (tamSB+tamMB(SB.totBloques)+tamAI(SB.totInodos));
+    printf("bitsMeta : %d\n",bitsMetadatos);
     int posbyte = (bitsMetadatos / 8);
     int posbit = (bitsMetadatos % 8);
-
+    printf("posByte : %d, posbit : %d\n",posbyte,posbit);
     for (int i=0;i<posbyte;i++) {
-        buf[i]=255;
+        bufferMB[i]=255;
     }
 
     // int array con los valores de la potencia de 2
@@ -82,12 +83,65 @@ int initMB() {
     for (int i=0;i<posbit;i++) {
         resultat += bits[i];
     }
-
-    buf[posbyte+1]=resultat;
+    printf("posByte : %d, resultat : %d\n",posbyte,resultat);
+    bufferMB[posbyte]=resultat; */
     
-    for (int i = SB.posPrimerBloqueMB;i <= SB.posUltimoBloqueMB;i++) {
-        bwrite(i,buf);
+/*     for (int i = SB.posPrimerBloqueMB;i <= SB.posUltimoBloqueMB;i++) {
+        bwrite(i,bufferMB);
+    }  
+    printf("leer_bit(99999) : %d\n",leer_bit(99999)); */
+      /* int i = SB.posPrimerBloqueMB;
+    bwrite(i,bufferMB);
+    memset(bufferMB,0,BLOCKSIZE);
+    i++;
+    for (;i <= SB.posUltimoBloqueMB;i++) {
+        bwrite(i,bufferMB);
+    }   */
+
+    struct superbloque SB;
+    bread(posSB,&SB);
+    unsigned char bufferMB[BLOCKSIZE];
+    memset(bufferMB,255,BLOCKSIZE);
+    int bitsMetadatos = (tamSB+tamMB(SB.totBloques)+tamAI(SB.totInodos));
+    printf("bitsMeta : %d\n",bitsMetadatos);
+
+    int nbloqueabs = bitsMetadatos/(BLOCKSIZE*8);
+    int posbyte = (bitsMetadatos / 8);
+    //nbloqueabs += posbyte/BLOCKSIZE; 
+    int posbit = (bitsMetadatos % 8);
+    printf("bloqueabs: %d\n",nbloqueabs);
+    for (int i = SB.posPrimerBloqueMB;i < SB.posPrimerBloqueMB+nbloqueabs;i++) {
+        bwrite(i,bufferMB);
+        printf("i: %d\n",i);
     }
+
+    
+    printf("posByte : %d, posbit : %d\n",posbyte,posbit);
+
+    // int array con los valores de la potencia de 2
+    int bits[] = {128,64,32,16,8,4,2,1};
+    int resultat = 0;
+
+    for (int i=0;i<posbit;i++) {
+        resultat += bits[i];
+    }
+    posbyte %= BLOCKSIZE;
+    printf("posByte : %d, resultat : %d\n",posbyte,resultat);
+    bufferMB[posbyte]=resultat;
+
+    for (int i=posbyte+1;i<BLOCKSIZE;i++) {
+        bufferMB[i]=0;
+    }
+
+    int i = nbloqueabs+1;
+    printf("i + abs: %d\n",i);
+    bwrite(i,bufferMB);
+    memset(bufferMB,0,BLOCKSIZE);
+    i++;
+    for (;i <= SB.posUltimoBloqueMB;i++) {
+        bwrite(i,bufferMB);
+    }  
+
     // actualizar cantidad de bloques libres
     SB.cantBloquesLibres = SB.cantBloquesLibres - bitsMetadatos;
 
@@ -173,6 +227,7 @@ char leer_bit (unsigned int nbloque) {
     int posbit = nbloque % 8;
     int nbloqueMB = posbyte / BLOCKSIZE;
     int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
+    printf("\nleer_bit(%d) : posbyte: %d, posbit: %d, nbloqueMB: %d, nbloqueabs: %d\n",nbloque, posbyte,posbit,nbloqueMB,nbloqueabs);
 
     bread(nbloqueabs,bufferMB);
     unsigned char mascara = 128;
@@ -202,6 +257,7 @@ int reservar_bloque() {
         int encontrado = 0;
         unsigned int posBloqueMB = SB.posPrimerBloqueMB;
         for (;(posBloqueMB<=SB.posUltimoBloqueMB) && encontrado==0;posBloqueMB++) { //estalviar int posant es memcmp a nes bucle
+            printf("posBloqueMB : %d\n",posBloqueMB);
             bread(posBloqueMB,bufferMB);
             if (memcmp(bufferMB,bufferaux,BLOCKSIZE) != 0) { // primer byte con un 0 en el MB
                 encontrado = 1;
@@ -215,7 +271,7 @@ int reservar_bloque() {
                 encontrado = 1;
             }
         }
-
+        posBloqueMB--;
         unsigned char mascara = 128;
         unsigned int posbit = 0;
 
