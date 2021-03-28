@@ -71,7 +71,7 @@ int initMB() {
     int posbyte = (bitsMetadatos / 8);
     int posbit = (bitsMetadatos % 8);
 
-    for (int i=0;i<=posbyte;i++) {
+    for (int i=0;i<posbyte;i++) {
         buf[i]=255;
     }
 

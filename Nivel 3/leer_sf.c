@@ -35,6 +35,7 @@ int main() {
     }
     printf("\n"); */
 
+
     unsigned int nbloque = reservar_bloque();
     bread(posSB,&sb);
     printf("\nRESERVAMOS UN BLOQUE Y LUEGO LO LIBERAMOS\n");
