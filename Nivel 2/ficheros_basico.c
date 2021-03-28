@@ -16,7 +16,7 @@ int tamMB(unsigned int nbloques) {
 }
 
 /*
-    tamMB: calcula el tamaño en bloques del array de inodos
+    tamAI: calcula el tamaño en bloques del array de inodos
     input: unsigned int ninodos
     output: int tamAI
     uses: -
