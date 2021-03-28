@@ -379,12 +379,14 @@ int obtener_indice(unsigned int nblogico, unsigned int nivel_punteros) {
             return ((nblogico-INDIRECTOS1)%(NPUNTEROS*NPUNTEROS)) % NPUNTEROS;
         }
     }
+
+    return -1;
 }
 
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar){
     struct inodo inodo;
     leer_inodo (ninodo, &inodo);
-    int ptr = 0, ptr_ant = 0, nRangoBL, nivel_punteros, indice, salvar_inodo = 0; 
+    unsigned int ptr = 0, ptr_ant = 0, nRangoBL, nivel_punteros, indice, salvar_inodo = 0; 
     unsigned int buffer[BLOCKSIZE / sizeof(unsigned int)];
     
     nRangoBL = obtener_nRangoBL(&inodo, nblogico, &ptr); //0:D, 1:I0, 2:I1, 3:I2

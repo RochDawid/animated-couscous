@@ -4,6 +4,7 @@ int main() {
     bmount("disco");
     struct superbloque sb;
 
+    
     bread(posSB,&sb);
     printf("DATOS DEL SUPERBLOQUE\n");
     printf("posPrimerBloqueMB = %d\n",sb.posPrimerBloqueMB);
@@ -19,7 +20,38 @@ int main() {
     printf("totBloques = %d\n",sb.totBloques);
     printf("totInodos = %d\n",sb.totInodos);
 
-    printf("\nsizeof struct superbloque: %d\n",(int) sizeof(sb));
+    reservar_inodo('f',6);
+
+    int bloquesLog[] = {8, 204, 30004, 400004, 468750};
+    for (int i = 0;i < 5;i++) {
+        traducir_bloque_inodo(1,bloquesLog[i],1);
+    }
+    
+    struct inodo inodo;
+    leer_inodo(1,&inodo);
+    struct tm *ts;
+    char atime[80];
+    char mtime[80];
+    char ctime[80];
+
+    ts = localtime(&inodo.atime);
+    strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
+    ts = localtime(&inodo.mtime);
+    strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+    ts = localtime(&inodo.ctime);
+    strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
+
+    printf("\nDATOS DEL DIRECTORIO RAIZ\n");
+    printf("tipo: %c\n",inodo.tipo);
+    printf("permisos: %d\n",inodo.permisos);
+    printf("atime: %s\n",atime);
+    printf("ctime: %s\n",ctime);
+    printf("mtime: %s\n",mtime);
+    printf("nlinks: %d\n",inodo.nlinks);
+    printf("tamEnBytesLog: %d\n",inodo.tamEnBytesLog);
+    printf("numBloquesOcupados: %d\n",inodo.numBloquesOcupados);
+
+/*    printf("\nsizeof struct superbloque: %d\n",(int) sizeof(sb));
     printf("sizeof struct inodo: %d\n",(int) sizeof(struct inodo));
 
     printf("\nRECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
@@ -67,7 +99,7 @@ int main() {
     printf("cantBloquesLibres = %d\n",sb.cantBloquesLibres);
     printf("cantInodosLibres = %d\n",sb.cantInodosLibres);
     printf("totBloques = %d\n",sb.totBloques);
-    printf("totInodos = %d\n",sb.totInodos);
+    printf("totInodos = %d\n",sb.totInodos); */
     
     return bumount();
 }
