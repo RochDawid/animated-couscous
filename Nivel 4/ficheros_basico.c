@@ -65,14 +65,15 @@ int initSB(unsigned int nbloques, unsigned int ninodos) {
 int initMB() {
     struct superbloque SB;
     bread(posSB,&SB);
-    unsigned char buf[BLOCKSIZE];
-    memset(buf,0,BLOCKSIZE);
+    unsigned char bufferMB[BLOCKSIZE];
+    memset(bufferMB,255,BLOCKSIZE);
     int bitsMetadatos = (tamSB+tamMB(SB.totBloques)+tamAI(SB.totInodos));
+
+    int nbloqueabs = bitsMetadatos/(BLOCKSIZE*8);
     int posbyte = (bitsMetadatos / 8);
     int posbit = (bitsMetadatos % 8);
-
-    for (int i=0;i<=posbyte;i++) {
-        buf[i]=255;
+    for (int i = SB.posPrimerBloqueMB;i < SB.posPrimerBloqueMB+nbloqueabs;i++) {
+        bwrite(i,bufferMB);
     }
 
     // int array con los valores de la potencia de 2
@@ -82,12 +83,20 @@ int initMB() {
     for (int i=0;i<posbit;i++) {
         resultat += bits[i];
     }
+    posbyte %= BLOCKSIZE;
+    bufferMB[posbyte]=resultat;
 
-    buf[posbyte+1]=resultat;
-    
-    for (int i = SB.posPrimerBloqueMB;i <= SB.posUltimoBloqueMB;i++) {
-        bwrite(i,buf);
+    for (int i=posbyte+1;i<BLOCKSIZE;i++) {
+        bufferMB[i]=0;
     }
+
+    int i = nbloqueabs+1;
+    bwrite(i,bufferMB);
+    memset(bufferMB,0,BLOCKSIZE);
+    i++;
+    for (;i <= SB.posUltimoBloqueMB;i++) {
+        bwrite(i,bufferMB);
+    }  
     // actualizar cantidad de bloques libres
     SB.cantBloquesLibres = SB.cantBloquesLibres - bitsMetadatos;
 
@@ -143,6 +152,7 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
     int nbloqueMB = posbyte / BLOCKSIZE;
     int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
 
+    bread(nbloqueabs, bufferMB);
     unsigned char mascara = 128;
     posbyte = posbyte % BLOCKSIZE;
     mascara >>= posbit; // nos desplazamos al bit que hay que cambiar
@@ -170,9 +180,10 @@ char leer_bit (unsigned int nbloque) {
     bread(posSB,&SB);
     int posbyte = nbloque / 8;
     int posbit = nbloque % 8;
-    //int nbloqueMB = posbyte / BLOCKSIZE;
-    //int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
+    int nbloqueMB = posbyte / BLOCKSIZE;
+    int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
 
+    bread(nbloqueabs,bufferMB);
     unsigned char mascara = 128;
     posbyte = posbyte % BLOCKSIZE;
     mascara >>= posbit; // nos desplazamos al bit que hay que cambiar
@@ -213,7 +224,7 @@ int reservar_bloque() {
                 encontrado = 1;
             }
         }
-
+        posBloqueMB--;
         unsigned char mascara = 128;
         unsigned int posbit = 0;
 
@@ -309,12 +320,10 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     if (SB.cantInodosLibres != 0) {
         struct inodo inodo;
         unsigned int posInodoReservado = SB.posPrimerInodoLibre;
-        printf("Posición del primer bloque libre de inodos pre: %d\n", posInodoReservado);
 
         // hacemos que el primer inodo libre sea el siguiente al que vamos a coger
         leer_inodo(posInodoReservado,&inodo);
         SB.posPrimerInodoLibre = inodo.punterosDirectos[0];
-        printf("Posición del primer bloque libre de inodos post: %d\n", SB.posPrimerInodoLibre);
 
 
         // definimos el inodo con sus respectivos atributos
@@ -322,7 +331,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
         inodo.tipo = tipo;
         inodo.nlinks = 1;
         inodo.tamEnBytesLog = 0;
-        inodo.atime = inodo.ctime = inodo.mtime = (time_t) NULL;
+        inodo.atime = inodo.ctime = inodo.mtime = time(NULL);
         inodo.numBloquesOcupados = 0;
         memset(inodo.punterosDirectos,0,sizeof(unsigned int)*12);
         memset(inodo.punterosIndirectos,0,sizeof(unsigned int)*3);
@@ -405,8 +414,10 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                 inodo.ctime = time(NULL);
                 if(nivel_punteros == nRangoBL){
                     inodo.punterosIndirectos[nRangoBL-1] = ptr;
+                    printf("traducir_bloque_inodo()->inodo.punterosIndirectos[%d] = %d (reservado BF %d para punteros_nivel%d)\n",nRangoBL-1,ptr,ptr,nivel_punteros);
                 } else {
                     buffer[indice] = ptr;
+                    printf("traducir_bloque_inodo()->punteros_nivel%d[%d] = %d (reservado BF %d para punteros_nivel%d)\n",nivel_punteros+1,indice,ptr,ptr,nivel_punteros);
                     if (bwrite(ptr_ant,buffer) < 0) return -1;
                 }
             }
@@ -428,8 +439,10 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
             inodo.ctime = time(NULL);
             if(!nRangoBL){
                 inodo.punterosDirectos[nblogico]=ptr;
+                printf("traducir_bloque_inodo()->inodo.punterosDirectos[%d] = %d (reservado BF %d para BL %d)\n",nblogico,ptr,ptr,nblogico);
             } else {
                 buffer[indice] = ptr;
+                printf("traducir_bloque_inodo()->punteros_nivel%d[%d] = %d (reservado BF %d para BL %d)\n",nivel_punteros+1,indice,ptr,ptr,nblogico);
                 if(bwrite(ptr_ant,buffer) < 0) return -1;
             }
         }
