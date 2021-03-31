@@ -35,7 +35,7 @@ int tamAI(unsigned int ninodos) {
     input: unsigned int nbloques, unsigned int ninodos
     output: BLOCKSIZE on success / -1 on failure
     uses: tamMB(),tamAI(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: mi_mkfs()
 */
 int initSB(unsigned int nbloques, unsigned int ninodos) {
     struct superbloque SB;
@@ -60,7 +60,7 @@ int initSB(unsigned int nbloques, unsigned int ninodos) {
     input: none
     output: BLOCKSIZE on success / -1 on failure
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: mi_mkfs()
 */
 int initMB() {
     struct superbloque SB;
@@ -99,7 +99,7 @@ int initMB() {
     input: none
     output: 0
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: mi_mkfs()
 */
 int initAI() {
     struct inodo inodos[BLOCKSIZE/INODOSIZE];
