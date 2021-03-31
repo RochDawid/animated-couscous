@@ -21,6 +21,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
         return leidos;
     } else {
         perror("Error: no dispone de permisos para leer el fichero/directorio.");
+        return -1;
     }
 }
 
