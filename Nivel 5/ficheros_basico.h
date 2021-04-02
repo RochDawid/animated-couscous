@@ -81,7 +81,7 @@ struct STAT {
    unsigned int nlinks;             // Cantidad de enlaces de entradas en directorio
    unsigned int tamEnBytesLog;      // Tamaño en bytes lógicos
    unsigned int numBloquesOcupados; // Cantidad de bloques ocupados zona de datos
-}
+};
 
 int escribir_bit(unsigned int nbloque, unsigned int bit);
 char leer_bit (unsigned int nbloque);
