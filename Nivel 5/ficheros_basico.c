@@ -392,6 +392,13 @@ int obtener_indice(unsigned int nblogico, unsigned int nivel_punteros) {
     return -1;
 }
 
+/*
+    traducir_bloque_inodo: se encarga de obtener el nº  de bloque físico correspondiente a un bloque lógico determinado del inodo indicado.
+    input: unsigned int ninodo, unsigned int nblogico, char reservar
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar){
     struct inodo inodo;
     leer_inodo (ninodo, &inodo);

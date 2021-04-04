@@ -1,5 +1,12 @@
 #include "ficheros.h"
 
+/*
+    mi_write_f: Escribe el contenido procedente de un buffer de memoria, buf_original, de tamaño nbytes, en un fichero/directorio
+    input: unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
     leer_inodo(ninodo, &inodo);
@@ -48,6 +55,13 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
     }
 }
 
+/*
+    mi_read_f: Lee información de un fichero/directorio y la almacena en un buffer de memoria, buf_original
+    input: unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
     leer_inodo(ninodo, &inodo);
@@ -112,6 +126,13 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     }
 }
 
+/*
+    mi_stat_f: Devuelve la metainformación de un fichero/directorio
+    input: unsigned int ninodo, struct STAT *p_stat
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     struct inodo inodo;
     leer_inodo(ninodo, &inodo);
@@ -158,6 +179,13 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     return 0;
 }
 
+/*
+    mi_chmod_f: Cambia los permisos de un fichero/directorio con el valor que indique el argumento permisos
+    input: unsigned int ninodo, unsigned char permisos
+    output: 0
+    uses: bread(),bwrite()
+    used by: mi_mkfs(), leer_sf()
+*/
 int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
     struct inodo inodo;
     time_t timer;
