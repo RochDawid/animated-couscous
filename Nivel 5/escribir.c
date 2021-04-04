@@ -7,9 +7,10 @@ int main(int argc,char **argv) {
     char buffer[BLOCKSIZE];
     strcpy(buffer, argv[1]);
     int length = strlen(argv[1]);
-    mi_write_f(ninodo,buffer,arrayOffset[0],length);
+    length = length * sizeof(char);
+    mi_write_f(ninodo,buffer,arrayOffset[2],length);
     char buffer_lec[BLOCKSIZE];
-    mi_read_f(ninodo,buffer_lec,arrayOffset[0],length);
+    mi_read_f(ninodo,buffer_lec,arrayOffset[2],length);
     printf("Buffer : %s\n",buffer_lec);
     struct STAT state;
     mi_stat_f(ninodo,&state);

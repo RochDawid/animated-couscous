@@ -3,7 +3,7 @@
 int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
     leer_inodo(ninodo, &inodo);
-    if ((inodo.permisos & 2) != 2) {
+    if ((inodo.permisos & 2) == 2) {
         unsigned int primerBL = offset/BLOCKSIZE;
         unsigned int ultimoBL = (offset + nbytes - 1)/BLOCKSIZE;
         unsigned int desp1 = offset%BLOCKSIZE;
@@ -48,7 +48,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
 int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
     leer_inodo(ninodo, &inodo);
-    if ((inodo.permisos & 4) != 4) {
+    if ((inodo.permisos & 4) == 4) {
         unsigned int leidos = 0;
         if (offset >= inodo.tamEnBytesLog) { // no podemos leer nada
             leidos = 0;
