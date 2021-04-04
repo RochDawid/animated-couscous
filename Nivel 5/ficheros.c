@@ -120,6 +120,18 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     p_stat->permisos = inodo.permisos;
     p_stat->tamEnBytesLog = inodo.tamEnBytesLog;
 
+    struct tm *ts;
+    char atime[80];
+    char mtime[80];
+    char ctime[80];
+
+    ts = localtime(&p_stat->atime);
+    strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
+    ts = localtime(&p_stat->mtime);
+    strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+    ts = localtime(&p_stat->ctime);
+    strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
+
 /*     printf("METAINFORMACIÓN DEL FICHERO/DIRECTORIO DEL INODO %d\n", ninodo);
     printf("tipo: %c\n",p_stat->tipo);
     printf("permisos: %d\n",p_stat->permisos);
@@ -132,9 +144,9 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     fprintf(stderr,"METAINFORMACIÓN DEL FICHERO/DIRECTORIO DEL INODO %d\n", ninodo);
     fprintf(stderr,"tipo: %c\n",p_stat->tipo);
     fprintf(stderr,"permisos: %d\n",p_stat->permisos);
-    fprintf(stderr,"atime: %s\n",p_stat->atime);
-    fprintf(stderr,"ctime: %s\n",p_stat->ctime);
-    fprintf(stderr,"mtime: %s\n",p_stat->mtime);
+    fprintf(stderr,"atime: %s\n",atime);
+    fprintf(stderr,"ctime: %s\n",ctime);
+    fprintf(stderr,"mtime: %s\n",mtime);
     fprintf(stderr,"nlinks: %d\n",p_stat->nlinks);
     fprintf(stderr,"tamEnBytesLog: %d\n",p_stat->tamEnBytesLog);
     fprintf(stderr,"numBloquesOcupados: %d\n",p_stat->numBloquesOcupados);
