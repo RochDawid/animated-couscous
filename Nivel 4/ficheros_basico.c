@@ -83,20 +83,18 @@ int initMB() {
     for (int i=0;i<posbit;i++) {
         resultat += bits[i];
     }
-    posbyte %= BLOCKSIZE;
+    posbyte %= BLOCKSIZE; // localizar posición dentro del bloque
     bufferMB[posbyte]=resultat;
 
     for (int i=posbyte+1;i<BLOCKSIZE;i++) {
         bufferMB[i]=0;
     }
 
-    int i = nbloqueabs+1;
-    bwrite(i,bufferMB);
+    bwrite(nbloqueabs+1,bufferMB);
     memset(bufferMB,0,BLOCKSIZE);
-    i++;
-    for (;i <= SB.posUltimoBloqueMB;i++) {
+    for (int i = nbloqueabs+2;i <= SB.posUltimoBloqueMB;i++) {
         bwrite(i,bufferMB);
-    }  
+    }
     // actualizar cantidad de bloques libres
     SB.cantBloquesLibres = SB.cantBloquesLibres - bitsMetadatos;
 
