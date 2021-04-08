@@ -16,15 +16,15 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         unsigned int desp1 = offset%BLOCKSIZE;
         unsigned int desp2 = (offset + nbytes - 1)%BLOCKSIZE;
         unsigned int nbfisico = traducir_bloque_inodo(ninodo,primerBL,1);
-        printf("1r BL : %d, ultBL : %d, desp1 : %d, desp2 : %d, nbfisico : %d, nbytes : %d\n",primerBL,ultimoBL,desp1,desp2,nbfisico,nbytes);
+        //printf("1r BL : %d, ultBL : %d, desp1 : %d, desp2 : %d, nbfisico : %d, nbytes : %d\n",primerBL,ultimoBL,desp1,desp2,nbfisico,nbytes);
         unsigned char buf_bloque[BLOCKSIZE];
         unsigned int bytesEscritos;
         bread(nbfisico,buf_bloque);
         if (primerBL == ultimoBL) { // escribimos en un único bloque
             memcpy(buf_bloque + desp1, buf_original,nbytes);
             bwrite(nbfisico,buf_bloque);
-            bytesEscritos = desp2 - desp1;
-            printf("mi_write -> bytesEscritos : %d\n",bytesEscritos);
+            bytesEscritos = desp2 - desp1 + 1;
+            //printf("mi_write -> bytesEscritos : %d\n",bytesEscritos);
         } else { // tenemos que escribir en más de un bloque
             memcpy(buf_bloque + desp1, buf_original,BLOCKSIZE - desp1);
             bytesEscritos = bwrite(nbfisico,buf_bloque) - desp1;
@@ -40,8 +40,8 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
 
         leer_inodo(ninodo,&inodo);
         time_t timer;
-        if (bytesEscritos > inodo.tamEnBytesLog) {
-            inodo.tamEnBytesLog = bytesEscritos;
+        if (offset > inodo.tamEnBytesLog || (offset + bytesEscritos) > inodo.tamEnBytesLog) {
+            inodo.tamEnBytesLog = offset + bytesEscritos;
             inodo.ctime = time(&timer);
         }
         
@@ -67,7 +67,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     leer_inodo(ninodo, &inodo);
     if ((inodo.permisos & 4) == 4) {
         unsigned int leidos = 0;
-        printf("mi_Read -> offset %d \t inodo.tamBytes : %d\n",offset,inodo.tamEnBytesLog);
+        //printf("mi_Read -> offset %d \t inodo.tamBytes : %d\n",offset,inodo.tamEnBytesLog);
         if (offset >= inodo.tamEnBytesLog) { // no podemos leer nada
             leidos = 0;
             return leidos;
@@ -90,7 +90,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
                 bread(nbfisico,buf_bloque);
                 memcpy(buf_original, buf_bloque + desp1,nbytes);
             }
-            bytesLeidos = BLOCKSIZE - desp1;
+            bytesLeidos = desp2 - desp1 + 1;
         } else { // tenemos que escribir en más de un bloque
             if (nbfisico != -1) {
                 bread(nbfisico,buf_bloque);
@@ -145,7 +145,7 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     p_stat->permisos = inodo.permisos;
     p_stat->tamEnBytesLog = inodo.tamEnBytesLog;
 
-    struct tm *ts;
+/*     struct tm *ts;
     char atime[80];
     char mtime[80];
     char ctime[80];
@@ -155,7 +155,7 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     ts = localtime(&p_stat->mtime);
     strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
     ts = localtime(&p_stat->ctime);
-    strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
+    strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts); */
 
 /*     printf("METAINFORMACIÓN DEL FICHERO/DIRECTORIO DEL INODO %d\n", ninodo);
     printf("tipo: %c\n",p_stat->tipo);
@@ -166,7 +166,7 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     printf("nlinks: %d\n",p_stat->nlinks);
     printf("tamEnBytesLog: %d\n",p_stat->tamEnBytesLog);
     printf("numBloquesOcupados: %d\n",p_stat->numBloquesOcupados); */
-    fprintf(stderr,"\nMETAINFORMACIÓN DEL FICHERO/DIRECTORIO DEL INODO %d\n", ninodo);
+    /* fprintf(stderr,"\nMETAINFORMACIÓN DEL FICHERO/DIRECTORIO DEL INODO %d\n", ninodo);
     fprintf(stderr,"tipo: %c\n",p_stat->tipo);
     fprintf(stderr,"permisos: %d\n",p_stat->permisos);
     fprintf(stderr,"atime: %s\n",atime);
@@ -174,7 +174,7 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     fprintf(stderr,"mtime: %s\n",mtime);
     fprintf(stderr,"nlinks: %d\n",p_stat->nlinks);
     fprintf(stderr,"tamEnBytesLog: %d\n",p_stat->tamEnBytesLog);
-    fprintf(stderr,"numBloquesOcupados: %d\n",p_stat->numBloquesOcupados);
+    fprintf(stderr,"numBloquesOcupados: %d\n",p_stat->numBloquesOcupados); */
 
     return 0;
 }

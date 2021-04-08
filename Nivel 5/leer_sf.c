@@ -6,7 +6,7 @@ int main() {
 
     
     bread(posSB,&sb);
-    printf("DATOS DEL SUPERBLOQUE\n");
+    printf("\nDATOS DEL SUPERBLOQUE\n");
     printf("posPrimerBloqueMB = %d\n",sb.posPrimerBloqueMB);
     printf("posUltimoBloqueMB = %d\n",sb.posUltimoBloqueMB);
     printf("posPrimerBloqueAI = %d\n",sb.posPrimerBloqueAI);
@@ -18,9 +18,9 @@ int main() {
     printf("cantBloquesLibres = %d\n",sb.cantBloquesLibres);
     printf("cantInodosLibres = %d\n",sb.cantInodosLibres);
     printf("totBloques = %d\n",sb.totBloques);
-    printf("totInodos = %d\n",sb.totInodos);
+    printf("totInodos = %d\n\n",sb.totInodos);
 
-    reservar_inodo('f',6);
+    /* reservar_inodo('f',6);
 
     printf("\nINODO 1. TRADUCCION DE LOS BLOQUES LOGICOS 8, 204, 30.004, 400.004 y 468.750\n");
     int bloquesLog[] = {8, 204, 30004, 400004, 468750};
@@ -53,7 +53,7 @@ int main() {
     printf("numBloquesOcupados: %d\n",inodo.numBloquesOcupados);
 
     bread(posSB,&sb);
-    printf("\nSB.posPrimerInodoLibre : %d\n",sb.posPrimerInodoLibre);
+    printf("\nSB.posPrime rInodoLibre : %d\n",sb.posPrimerInodoLibre);*/
 
 /*    printf("\nsizeof struct superbloque: %d\n",(int) sizeof(sb));
     printf("sizeof struct inodo: %d\n",(int) sizeof(struct inodo));
