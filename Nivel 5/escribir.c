@@ -30,7 +30,7 @@ int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
             int bytesEscritos = mi_write_f(ninodo,buffer,arrayOffset[i],length);
             printf("BytesEscritos : %d\n",bytesEscritos);
             struct STAT state;
-            mi_stat_f(ninodo,&state);
+            mi_stat_f(ninodo, &state);
             printf("stat.tamEnBytesLog = %d\n",state.tamEnBytesLog);
             printf("stat.numBloquesOcupados = %d\n\n",state.numBloquesOcupados);
             //memset(buffer,0,BLOCKSIZE);

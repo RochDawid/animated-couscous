@@ -90,9 +90,9 @@ int initMB() {
         bufferMB[i]=0;
     }
 
-    bwrite(nbloqueabs+1,bufferMB);
+    bwrite(nbloqueabs+SB.posPrimerBloqueMB,bufferMB);
     memset(bufferMB,0,BLOCKSIZE);
-    for (int i = nbloqueabs+2;i <= SB.posUltimoBloqueMB;i++) {
+    for (int i = nbloqueabs+SB.posPrimerBloqueMB+1;i <= SB.posUltimoBloqueMB;i++) {
         bwrite(i,bufferMB);
     } 
     // actualizar cantidad de bloques libres
@@ -167,7 +167,7 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
 /*
     leer_bit: lee un determinado bit del MB y devuelve el valor del bit leído.
     input: unsigned int nbloque, unsigned int bit
-    output: 0
+    output: unsigned char mascara
     uses: bread(),bwrite()
     used by: mi_mkfs(), leer_sf()
 */
@@ -465,7 +465,26 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     used by: 
 */
 int liberar_inodo(unsigned int ninodo) {
+    struct inodo inodo;
+    struct superbloque SB;
+    
+    leer_inodo(ninodo,&inodo);
+    int inodosLiberados = 0;
+    for (int i = 0;i <= inodo.tamEnBytesLog;i++) {
+        //leer_bit();
+        inodosLiberados += liberar_bloques_inodo(i,&inodo);
+    }
+    inodo.numBloquesOcupados -= inodosLiberados;
+    inodo.tipo = 'l';
+    inodo.tamEnBytesLog = 0;
+    bread(posSB,&SB);
+    inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
+    SB.posPrimerInodoLibre = ninodo; //ns
+    //SB.cantInodosLibres aumentar;
+    escribir_inodo(ninodo,inodo);
+    bwrite(posSB,&SB);
 
+    return ninodo;
 }
 
 /*

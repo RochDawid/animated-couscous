@@ -90,9 +90,9 @@ int initMB() {
         bufferMB[i]=0;
     }
 
-    bwrite(nbloqueabs+1,bufferMB);
+    bwrite(nbloqueabs+SB.posPrimerBloqueMB,bufferMB);
     memset(bufferMB,0,BLOCKSIZE);
-    for (int i = nbloqueabs+2;i <= SB.posUltimoBloqueMB;i++) {
+    for (int i = nbloqueabs+SB.posPrimerBloqueMB+1;i <= SB.posUltimoBloqueMB;i++) {
         bwrite(i,bufferMB);
     } 
     // actualizar cantidad de bloques libres
@@ -152,7 +152,7 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
 
     bread(nbloqueabs, bufferMB);
     unsigned char mascara = 128;
-    posbyte = posbyte % BLOCKSIZE;
+    posbyte %= BLOCKSIZE;
     mascara >>= posbit; // nos desplazamos al bit que hay que cambiar
     
     if (bit == 1) {

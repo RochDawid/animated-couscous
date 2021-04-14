@@ -50,7 +50,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
             
         return bytesEscritos;
     } else {
-        perror("Error: no dispone de permisos para leer el fichero/directorio.");
+        perror("Error: no dispone de permisos para escribir en el fichero/directorio.");
         return -1;
     }
 }
@@ -205,6 +205,27 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
     uses: 
     used by: 
 */
-int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) {
+int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) { // no se puede truncar  más allá del tamaño en bytes lóg del fich/direc
+    struct inodo inodo;
+    leer_inodo(ninodo,&inodo);
+    if ((inodo.permisos & 2) == 2) {
+        int primerBL;
+        time_t timer;
+        if (nbytes % BLOCKSIZE == 0) {
+            primerBL = nbytes/BLOCKSIZE;
+        } else {
+            primerBL = nbytes/BLOCKSIZE+1;
+        }
+        int inodosLiberados = liberar_bloques_inodo(primerBL,&inodo);
+        inodo.mtime = time(&timer);
+        inodo.ctime = time(&timer);
+        inodo.tamEnBytesLog = nbytes;
+        inodo.numBloquesOcupados -= inodosLiberados;
+        escribir_inodo(ninodo,inodo);
 
+        return inodosLiberados;
+    } else {
+        perror("Error: no dispone de permisos para escribir en el fichero/directorio.");
+        return -1;
+    }
 }
