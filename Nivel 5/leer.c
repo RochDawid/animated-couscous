@@ -5,7 +5,7 @@ int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
         bmount(argv[1]);
         //unsigned int ninodo = reservar_inodo('f',6);
         unsigned int ninodo = atoi(argv[2]);
-        printf("ninodo : %d\n",ninodo);
+        fprintf(stderr,"ninodo : %d\n",ninodo);
         int offset = 0, tambuffer = 1500;
         char buffer[tambuffer];
         FILE *fichero;
