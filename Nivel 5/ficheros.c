@@ -103,7 +103,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
                 }
                 bytesLeidos += BLOCKSIZE;
             }
-            nbfisico = traducir_bloque_inodo(ninodo, ultimoBL, 1);
+            nbfisico = traducir_bloque_inodo(ninodo, ultimoBL, 0);
             if (nbfisico != -1) {
                 bread(nbfisico, buf_bloque);
                 memcpy(buf_original, buf_bloque + (nbytes - desp2 - 1),desp2 + 1);

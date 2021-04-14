@@ -11,10 +11,13 @@ int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
         FILE *fichero;
         char string[128];
 
+        fprintf(stderr, "Abans fopen");
         fichero = fopen(argv[4],"w");
-
+        fprintf(stderr, "Després fopen");
         memset(buffer,0,tambuffer);
+        fprintf(stderr, "Abans mi_read_f");
         int leidos = mi_read_f(ninodo,buffer,offset,tambuffer);
+        fprintf(stderr, "Després mi_read_f");
         while (leidos > 0) {
             //fputs(buffer,fichero);
             fwrite(buffer,sizeof(char),sizeof(buffer),fichero);
