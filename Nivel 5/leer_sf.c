@@ -1,9 +1,14 @@
+/*
+    Sergi Moreno Pérez
+    Antoni Payeras Munar
+    Dawid Michal Roch Móll
+*/
+
 #include "ficheros_basico.h"
 
 int main() {
     bmount("disco");
     struct superbloque sb;
-
     
     bread(posSB,&sb);
     printf("\nDATOS DEL SUPERBLOQUE\n");

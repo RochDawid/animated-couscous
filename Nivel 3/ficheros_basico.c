@@ -1,3 +1,9 @@
+/*
+    Sergi Moreno Pérez
+    Antoni Payeras Munar
+    Dawid Michal Roch Móll
+*/
+
 #include "ficheros_basico.h"
 
 /*
@@ -211,7 +217,6 @@ int reservar_bloque() {
         int encontrado = 0;
         unsigned int posBloqueMB = SB.posPrimerBloqueMB;
         for (;(posBloqueMB<=SB.posUltimoBloqueMB) && encontrado==0;posBloqueMB++) { //estalviar int posant es memcmp a nes bucle
-            //printf("posBloqueMB : %d\n",posBloqueMB);
             bread(posBloqueMB,bufferMB);
             if (memcmp(bufferMB,bufferaux,BLOCKSIZE) != 0) { // primer byte con un 0 en el MB
                 encontrado = 1;
@@ -233,9 +238,7 @@ int reservar_bloque() {
             bufferMB[posbyte] <<= 1; // desplazamiento de bits a la izquierda
             posbit++;
         }
-        //printf("posBloqueMB: %d, posbyte : %d, posbit : %d\n",posBloqueMB,posbyte,posbit);
         unsigned int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
-        //printf("bloque : %d\n",nbloque);
         escribir_bit(nbloque, 1);
         SB.cantBloquesLibres--;
         bwrite(posSB,&SB);
@@ -323,13 +326,10 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     if (SB.cantInodosLibres != 0) {
         struct inodo inodo;
         unsigned int posInodoReservado = SB.posPrimerInodoLibre;
-        //printf("Posición del primer bloque libre de inodos pre: %d\n", posInodoReservado);
 
         // hacemos que el primer inodo libre sea el siguiente al que vamos a coger
         leer_inodo(posInodoReservado,&inodo);
         SB.posPrimerInodoLibre = inodo.punterosDirectos[0];
-        //printf("Posición del primer bloque libre de inodos post: %d\n", SB.posPrimerInodoLibre);
-
 
         // definimos el inodo con sus respectivos atributos
         inodo.permisos = permisos;

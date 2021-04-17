@@ -1,3 +1,7 @@
+#    Sergi Moreno Pérez
+#    Antoni Payeras Munar
+#    Dawid Michal Roch Móll
+
 CC=gcc
 CFLAGS=-c -g -Wall -std=gnu99
 SOURCES=mi_mkfs.c bloques.c ficheros_basico.c leer_sf.c ficheros.c escribir.c leer.c #permitir.c

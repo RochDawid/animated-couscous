@@ -209,21 +209,23 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) { // no se puede trun
     struct inodo inodo;
     leer_inodo(ninodo,&inodo);
     if ((inodo.permisos & 2) == 2) {
-        int primerBL;
+        int primerBL, bloquesLiberados = 0;
         time_t timer;
         if (nbytes % BLOCKSIZE == 0) {
             primerBL = nbytes/BLOCKSIZE;
         } else {
             primerBL = nbytes/BLOCKSIZE+1;
         }
-        int inodosLiberados = liberar_bloques_inodo(primerBL,&inodo);
+        for (int i=primerBL;i <= inodo.tamEnBytesLog;i++) {
+            bloquesLiberados += liberar_bloques_inodo(i, &inodo);
+        }
         inodo.mtime = time(&timer);
         inodo.ctime = time(&timer);
         inodo.tamEnBytesLog = nbytes;
-        inodo.numBloquesOcupados -= inodosLiberados;
-        escribir_inodo(ninodo,inodo);
+        inodo.numBloquesOcupados -= bloquesLiberados;
+        escribir_inodo(ninodo, inodo);
 
-        return inodosLiberados;
+        return bloquesLiberados;
     } else {
         perror("Error: no dispone de permisos para escribir en el fichero/directorio.");
         return -1;

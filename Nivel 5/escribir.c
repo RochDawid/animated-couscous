@@ -1,3 +1,8 @@
+/*
+    Sergi Moreno Pérez
+    Antoni Payeras Munar
+    Dawid Michal Roch Móll
+*/
 #include "ficheros.h"
 
 int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
@@ -33,9 +38,9 @@ int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
             mi_stat_f(ninodo, &state);
             printf("stat.tamEnBytesLog = %d\n",state.tamEnBytesLog);
             printf("stat.numBloquesOcupados = %d\n\n",state.numBloquesOcupados);
-            //memset(buffer,0,BLOCKSIZE);
-            //int bytesLeidos = mi_read_f(ninodo,buffer,arrayOffset[i],length);
-            //printf("bytesEscritos : %d\tbytesLeidos : %d\n",bytesEscritos,bytesLeidos);
+            // memset(buffer,0,BLOCKSIZE);
+            // int bytesLeidos = mi_read_f(ninodo,buffer,arrayOffset[i],length);
+            // printf("Leido : %s\n",buffer);
             //puts(buffer);
             
             //write(1,buffer,b);

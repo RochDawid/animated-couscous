@@ -1,5 +1,11 @@
+/*
+    Sergi Moreno Pérez
+    Antoni Payeras Munar
+    Dawid Michal Roch Móll
+*/
 #include "bloques.h"
 #include <limits.h>
+#include <time.h>
 
 #define posSB 0 // el superbloque se escribe en el primer bloque de nuestro FS
 #define tamSB 1
@@ -57,5 +63,4 @@ struct inodo {     // comprobar que ocupa 128 bytes haciendo un sizeof(inodo)!!!
  
    /* Utilizar una variable de alineación si es necesario  para vuestra plataforma/compilador   */
    char padding[INODOSIZE - 2 * sizeof(unsigned char) - 3 * sizeof(time_t) - 18 * sizeof(unsigned int) - 6 * sizeof(unsigned char)];
-   // Hay que restar también lo que ocupen las variables de alineación utilizadas!!!
 };
