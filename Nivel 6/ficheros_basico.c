@@ -479,7 +479,7 @@ int liberar_inodo(unsigned int ninodo) {
     bread(posSB,&SB);
     inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
     SB.posPrimerInodoLibre = ninodo; //ns
-    //SB.cantInodosLibres aumentar;
+    //SB.cantInodosLibres++;
     escribir_inodo(ninodo,inodo);
     bwrite(posSB,&SB);
 
