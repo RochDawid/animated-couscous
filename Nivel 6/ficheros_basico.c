@@ -495,5 +495,8 @@ int liberar_inodo(unsigned int ninodo) {
     used by: 
 */
 int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo) {
-
+    unsigned int nivel_punteros, indice, ptr, nBL, ultimoBL;
+    int nRangoBL;
+    unsigned int bloques_punteros [3][NPUNTEROS];
+    unsigned char bufAux_punteros[BLOCKSIZE];
 }

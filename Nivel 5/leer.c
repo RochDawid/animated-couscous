@@ -3,7 +3,6 @@
 int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
     if (argv[1]) {
         bmount(argv[1]);
-        //unsigned int ninodo = reservar_inodo('f',6);
         unsigned int ninodo = atoi(argv[2]);
         //fprintf(stderr,"ninodo : %d\n",ninodo);
         int offset = 0, leidos = 0, contadorLeidos = 0, tambuffer = 1500;
