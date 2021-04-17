@@ -1,3 +1,9 @@
+/*
+    Sergi Moreno Pérez
+    Antoni Payeras Munar
+    Dawid Michal Roch Móll
+*/
+
 #include "ficheros_basico.h"
 
 /*
@@ -95,6 +101,7 @@ int initMB() {
     for (int i = nbloqueabs+SB.posPrimerBloqueMB+1;i <= SB.posUltimoBloqueMB;i++) {
         bwrite(i,bufferMB);
     }
+
     // actualizar cantidad de bloques libres
     SB.cantBloquesLibres = SB.cantBloquesLibres - bitsMetadatos;
 
@@ -196,7 +203,7 @@ char leer_bit (unsigned int nbloque) {
     input: none
     output: 0
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: mi_mkfs(), leer_sf(), traducir_bloque_inodo()
 */
 int reservar_bloque() {
     struct superbloque SB;
@@ -248,9 +255,9 @@ int reservar_bloque() {
 /*
     liberar_bloque:libera un bloque determinado
     input: unsigned int nbloque
-    output: 0
-    uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    output: nbloque
+    uses: bread(),bwrite(), escribir_bit()
+    used by: leer_sf()
 */
 int liberar_bloque(unsigned int nbloque) {
     struct superbloque SB;
@@ -288,7 +295,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
     input: unsigned int ninodo, struct inodo *inodo
     output: 0
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: mi_mkfs(), leer_sf(), traducir_bloque_inodo()
 */
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
     struct superbloque SB;
@@ -305,11 +312,11 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
 }
 
 /*
-    reservar_inodo: encuentra el primer inodo libre (dato almacenado en el superbloque), 
-		lo reserva (con la ayuda de la función escribir_inodo()), devuelve su número y actualiza la lista enlazada de inodos libres.
+    reservar_inodo: encuentra el primer inodo libre, lo reserva , devuelve su número y 
+                    actualiza la lista enlazada de inodos libres.
     input: unsigned char tipo, unsigned char permisos
-    output: 0
-    uses: bread(),bwrite()
+    output: 0posInodoReservado on success / -1 on failure
+    uses: bread(), bwrite(), leer_inodo(), escribir_inodo()
     used by: mi_mkfs(), leer_sf()
 */
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {
@@ -346,6 +353,14 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     return -1;
 }
 
+/*
+    obtener_nRangoBL: obtiene el rango de punteros en el que se sitúa el
+                      bloque lógico que se busca.
+    input: struct inodo *inodo, unsigned int nblogico, insigned int *ptr
+    output: rango del bloque lógico
+    uses: ~
+    used by: traducir_bloque_inodo()
+*/
 int obtener_nRangoBL(struct inodo *inodo,unsigned int nblogico,unsigned int *ptr) {
     if (nblogico<DIRECTOS) {
         *ptr = inodo->punterosDirectos[nblogico];
@@ -366,6 +381,14 @@ int obtener_nRangoBL(struct inodo *inodo,unsigned int nblogico,unsigned int *ptr
     }
 }
 
+/*
+    obtener_indice: generaliza la obtención de los índices de
+                    los bloques de punteros.
+    input: unsigned int nblogico, unsigned int nivel_punteros
+    output: indice
+    uses: ~
+    used by: traducir_bloque_inodo()
+*/
 int obtener_indice(unsigned int nblogico, unsigned int nivel_punteros) {
     if (nblogico<DIRECTOS) {
         return nblogico;
@@ -391,10 +414,12 @@ int obtener_indice(unsigned int nblogico, unsigned int nivel_punteros) {
 }
 
 /*
-    traducir_bloque_inodo: se encarga de obtener el nº  de bloque físico correspondiente a un bloque lógico determinado del inodo indicado.
-    input: unsigned int ninodo, unsigned int nblogico, char reservar
+    traducir_bloque_inodo: se encarga de obtener el nº de bloque físico correspondiente a un
+                           bloque lógico determinado del inodo indicado.
+    input: unsigned int ninodo, unsigned int nblogico, unsigned char reservar
     output: 0
-    uses: bread(),bwrite()
+    uses: bread(), bwrite(), obtener_nRangoBL(), reservar_bloque(), 
+          obtener_indice(), escribir_inodo(), leer_inodo()
     used by: mi_mkfs(), leer_sf()
 */
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar){
@@ -403,16 +428,15 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     unsigned int ptr = 0, ptr_ant = 0, nRangoBL, nivel_punteros, indice, salvar_inodo = 0; 
     unsigned int buffer[BLOCKSIZE / sizeof(unsigned int)];
     
-    nRangoBL = obtener_nRangoBL(&inodo, nblogico, &ptr); //0:D, 1:I0, 2:I1, 3:I2
-    nivel_punteros = nRangoBL;//el nivel_punteros +alto es el que cuelga del inodo
+    nRangoBL = obtener_nRangoBL(&inodo, nblogico, &ptr); // 0:D, 1:I0, 2:I1, 3:I2
+    nivel_punteros = nRangoBL;// el nivel_punteros +alto es el que cuelga del inodo
     
-    //iterar para cada nivel de indirectos
-    while (nivel_punteros > 0){
-        //no cuelgan bloques de punteros
-        if(!ptr){ 
+    
+    while (nivel_punteros > 0){ // iterar para cada nivel de indirectos
+        if(!ptr){ // no cuelgan bloques de punteros
             if(!reservar) {
-                return -1; //error lectura bloque inexistente
-            } else { //reservar bloques punteros y crear enlaces desde inodo hasta datos
+                return -1; // error lectura bloque inexistente
+            } else { // reservar bloques punteros y crear enlaces desde inodo hasta datos
                 salvar_inodo = 1;
                 ptr = reservar_bloque();
                 inodo.numBloquesOcupados++;
@@ -434,15 +458,15 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
         nivel_punteros--;
     }
     
-    if(!ptr){
-        if(!reservar) {
+    if (!ptr) { // no cuelgan bloques de punteros
+        if (!reservar) {
             return -1;
         } else {
             salvar_inodo = 1;
             ptr = reservar_bloque();
             inodo.numBloquesOcupados++;
             inodo.ctime = time(NULL);
-            if(!nRangoBL){
+            if (!nRangoBL) {
                 inodo.punterosDirectos[nblogico]=ptr;
                 fprintf(stderr,"traducir_bloque_inodo()->inodo.punterosDirectos[%d] = %d (reservado BF %d para BL %d)\n",nblogico,ptr,ptr,nblogico);
             } else {
@@ -456,4 +480,3 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
 
     return ptr;
 }
-  

@@ -1,3 +1,9 @@
+/*
+    Sergi Moreno Pérez
+    Antoni Payeras Munar
+    Dawid Michal Roch Móll
+*/
+
 #include "ficheros_basico.h"
 
 int main(int argc, char **argv) {
@@ -13,8 +19,7 @@ int main(int argc, char **argv) {
     initSB(nbloques,ninodos);
     initMB();
     initAI();
-
-    reservar_inodo('d', 7);
+    reservar_inodo('d', 7); // reservamos el inodo raíz
 
     return bumount();
 }

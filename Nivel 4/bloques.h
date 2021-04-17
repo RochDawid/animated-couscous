@@ -1,4 +1,8 @@
-// bloques.h
+/*
+    Sergi Moreno Pérez
+    Antoni Payeras Munar
+    Dawid Michal Roch Móll
+*/
  
 #include <stdio.h>  //printf(), fprintf(), stderr, stdout, stdin
 #include <fcntl.h> //O_WRONLY, O_CREAT, O_TRUNC
