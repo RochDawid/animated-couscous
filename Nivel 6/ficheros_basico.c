@@ -262,7 +262,6 @@ int liberar_bloque(unsigned int nbloque) {
     return nbloque;
 }
 
-
 /*
     escribir_inodo: escribe el contenido de una variable de tipo struct inodo en un determinado inodo del array de inodos, inodos.
     input: unsigned int ninodo, struct inodo inodo
@@ -490,7 +489,7 @@ int liberar_inodo(unsigned int ninodo) {
 /*
     liberar_bloque_inodo: Libera todos los bloques ocupados a partir del bloque lógico indicado por el argumento primerBL (inclusive)
     input: unsigned int primerBL, struct inodo *inodo
-    output: 
+    output: int liberados
     uses: 
     used by: 
 */
@@ -499,4 +498,16 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo) {
     int nRangoBL;
     unsigned int bloques_punteros [3][NPUNTEROS];
     unsigned char bufAux_punteros[BLOCKSIZE];
+    int ptr_nivel[3];
+    int indices[3];
+    int liberados = 0;
+    if (inodo->tamEnBytesLog == 0) return 0;
+    if (inodo -> tamEnBytesLog % BLOCKSIZE == 0){
+        ultimoBL = inodo->tamEnBytesLog / BLOCKSIZE-1;
+    } else {
+        ultimoBL = inodo-> tamEnBytesLog / BLOCKSIZE;
+    }
+    memset(bufAux_punteros, 0, BLOCKSIZE);
+    ptr = 0;
+    
 }
