@@ -8,9 +8,9 @@
 int main(int argc,char **argv) {
     if (argc == 4) {
         bmount(argv[1]);
-        mi_chmod_f(argv[2],argv[3]);    
+        mi_chmod_f(atoi(argv[2]),atoi(argv[3]));    
         return bumount();
     }
-    perror("Sintaxis incorrecta\n");
+    fprintf(stderr,"Sintaxis: permitir <nombre_dispositivo> <ninodo> <permisos>\n");
     return -1;
 }

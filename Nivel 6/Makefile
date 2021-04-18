@@ -1,9 +1,9 @@
 CC=gcc
 CFLAGS=-c -g -Wall -std=gnu99
-SOURCES=mi_mkfs.c bloques.c ficheros_basico.c leer_sf.c ficheros.c truncar.c
+SOURCES=mi_mkfs.c bloques.c ficheros_basico.c leer_sf.c ficheros.c escribir.c leer.c permitir.c truncar.c
 LIBRARIES=bloques.o ficheros_basico.o ficheros.o
 INCLUDES=bloques.h ficheros_basico.h ficheros.h
-PROGRAMS=mi_mkfs leer_sf truncar
+PROGRAMS=mi_mkfs leer_sf escribir leer permitir truncar
 OBJS=$(SOURCES:.c=.o)
 all: $(OBJS) $(PROGRAMS)
 $(PROGRAMS): $(LIBRARIES) $(INCLUDES)
