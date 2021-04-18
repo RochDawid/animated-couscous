@@ -21,7 +21,6 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         unsigned int desp1 = offset%BLOCKSIZE;
         unsigned int desp2 = (offset + nbytes - 1)%BLOCKSIZE;
         unsigned int nbfisico = traducir_bloque_inodo(ninodo,primerBL,1);
-        //printf("1r BL : %d, ultBL : %d, desp1 : %d, desp2 : %d, nbfisico : %d, nbytes : %d\n",primerBL,ultimoBL,desp1,desp2,nbfisico,nbytes);
         unsigned char buf_bloque[BLOCKSIZE];
         unsigned int bytesEscritos;
         bread(nbfisico,buf_bloque);
@@ -29,7 +28,6 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
             memcpy(buf_bloque + desp1, buf_original,nbytes);
             bwrite(nbfisico,buf_bloque);
             bytesEscritos = desp2 - desp1 + 1;
-            //printf("mi_write -> bytesEscritos : %d\n",bytesEscritos);
         } else { // tenemos que escribir en más de un bloque
             memcpy(buf_bloque + desp1, buf_original,BLOCKSIZE - desp1);
             bytesEscritos = bwrite(nbfisico,buf_bloque) - desp1;
@@ -72,7 +70,6 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     unsigned int bytesLeidos = 0;
     leer_inodo(ninodo, &inodo);
     if ((inodo.permisos & 4) == 4) {
-        //printf("mi_Read -> offset %d \t inodo.tamBytes : %d\n",offset,inodo.tamEnBytesLog);
         if (offset >= inodo.tamEnBytesLog) { // no podemos leer nada
             return bytesLeidos;
         }

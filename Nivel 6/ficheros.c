@@ -16,15 +16,13 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         unsigned int desp1 = offset%BLOCKSIZE;
         unsigned int desp2 = (offset + nbytes - 1)%BLOCKSIZE;
         unsigned int nbfisico = traducir_bloque_inodo(ninodo,primerBL,1);
-        printf("1r BL : %d, ultBL : %d, desp1 : %d, desp2 : %d, nbfisico : %d, nbytes : %d\n",primerBL,ultimoBL,desp1,desp2,nbfisico,nbytes);
         unsigned char buf_bloque[BLOCKSIZE];
         unsigned int bytesEscritos;
         bread(nbfisico,buf_bloque);
         if (primerBL == ultimoBL) { // escribimos en un único bloque
             memcpy(buf_bloque + desp1, buf_original,nbytes);
             bwrite(nbfisico,buf_bloque);
-            bytesEscritos = desp2 - desp1;
-            printf("mi_write -> bytesEscritos : %d\n",bytesEscritos);
+            bytesEscritos = desp2 - desp1 + 1;
         } else { // tenemos que escribir en más de un bloque
             memcpy(buf_bloque + desp1, buf_original,BLOCKSIZE - desp1);
             bytesEscritos = bwrite(nbfisico,buf_bloque) - desp1;
@@ -40,8 +38,8 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
 
         leer_inodo(ninodo,&inodo);
         time_t timer;
-        if (bytesEscritos > inodo.tamEnBytesLog) {
-            inodo.tamEnBytesLog = bytesEscritos;
+        if (offset > inodo.tamEnBytesLog || (offset + bytesEscritos) > inodo.tamEnBytesLog) {
+            inodo.tamEnBytesLog = offset + bytesEscritos;
             inodo.ctime = time(&timer);
         }
         
@@ -88,7 +86,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
                 bread(nbfisico,buf_bloque);
                 memcpy(buf_original, buf_bloque + desp1,nbytes);
             }
-            bytesLeidos = BLOCKSIZE - desp1;
+            bytesLeidos = desp2 - desp1 + 1;
         } else { // tenemos que escribir en más de un bloque
             if (nbfisico != -1) {
                 bread(nbfisico,buf_bloque);
@@ -180,9 +178,9 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) { // no se puede trun
         } else {
             primerBL = nbytes/BLOCKSIZE+1;
         }
-        for (int i=primerBL;i <= inodo.tamEnBytesLog;i++) {
-            bloquesLiberados += liberar_bloques_inodo(i, &inodo);
-        }
+        //for (int i=primerBL;i <= inodo.tamEnBytesLog;i++) {
+            bloquesLiberados += liberar_bloques_inodo(primerBL, &inodo);
+        //}
         inodo.mtime = time(&timer);
         inodo.ctime = time(&timer);
         inodo.tamEnBytesLog = nbytes;
