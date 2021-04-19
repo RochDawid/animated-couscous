@@ -12,6 +12,7 @@ int main(int argc,char **argv) {
             mi_truncar_f(ninodo,nbytes);
         }
         struct inodo inodo;
+        leer_inodo(ninodo,&inodo);
         struct tm *ts;
         char atime[80];
         char mtime[80];
@@ -23,8 +24,7 @@ int main(int argc,char **argv) {
         strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
         ts = localtime(&inodo.ctime);
         strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
-    
-        leer_inodo(ninodo,&inodo);
+          
         fprintf(stderr,"\nINODO : %d\n",ninodo);
         fprintf(stderr,"tipo=%c\n",inodo.tipo);
         fprintf(stderr,"permisos=%d\n",inodo.permisos);
