@@ -490,12 +490,12 @@ int liberar_inodo(unsigned int ninodo) {
     bread(posSB,&SB);
     inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
     SB.posPrimerInodoLibre = ninodo;
-    fprintf(stderr,"\nINODO : %d\n",ninodo);
+    /* fprintf(stderr,"\nINODO : %d\n",ninodo);
     fprintf(stderr,"tipo=%c\n",inodo.tipo);
     fprintf(stderr,"permisos=%d\n",inodo.permisos);
     fprintf(stderr,"nlinks=%d\n",inodo.nlinks);
     fprintf(stderr,"tamEnBytesLog=%d\n",inodo.tamEnBytesLog);
-    fprintf(stderr,"numBloquesOcupados=%d\n",inodo.numBloquesOcupados);
+    fprintf(stderr,"numBloquesOcupados=%d\n",inodo.numBloquesOcupados); */
     SB.cantInodosLibres++;
     escribir_inodo(ninodo,inodo);
     bwrite(posSB,&SB);
