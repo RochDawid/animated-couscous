@@ -26,7 +26,6 @@ int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
         int i = 0;
         memset(buffer,0,BLOCKSIZE);
         
-        fprintf(stderr,"antes\n");
         length = strlen(argv[2]);
         fprintf(stderr,"\nlongitud texto : %d\n",length);
         //strcpy(buffer, argv[2]);

@@ -471,19 +471,19 @@ int liberar_inodo(unsigned int ninodo) {
     int bloquesLiberados = 0;
     int bloqueFisico;
     int ultimoBL;
-    if (inodo.tamEnBytesLog % BLOCKSIZE == 0){ // obtenemos último bloque lógico del inodo
+/*     if (inodo.tamEnBytesLog % BLOCKSIZE == 0){ // obtenemos último bloque lógico del inodo
         ultimoBL = inodo.tamEnBytesLog / BLOCKSIZE-1;
     } else {
         ultimoBL = inodo.tamEnBytesLog / BLOCKSIZE;
-    }
+    } */
     
     bloquesLiberados += liberar_bloques_inodo(0,&inodo);
-    for (int i = 1;i <= ultimoBL;i++) {
+/*     for (int i = 1;i <= ultimoBL;i++) {
         bloqueFisico = traducir_bloque_inodo(ninodo,i,0);
         if (leer_bit(bloqueFisico) != 0) {
             bloquesLiberados += liberar_bloques_inodo(i,&inodo);
         }
-    }
+    } */
     inodo.numBloquesOcupados -= bloquesLiberados;
     inodo.tipo = 'l';
     inodo.tamEnBytesLog = 0;

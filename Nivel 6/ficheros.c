@@ -171,7 +171,7 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) { // no se puede trun
     struct inodo inodo;
     leer_inodo(ninodo,&inodo);
     if ((inodo.permisos & 2) == 2) {
-        int primerBL, bloquesLiberados = 0;
+        int primerBL, bloquesLiberados;
         time_t timer;
         if (nbytes % BLOCKSIZE == 0) {
             primerBL = nbytes/BLOCKSIZE;
@@ -179,7 +179,7 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) { // no se puede trun
             primerBL = nbytes/BLOCKSIZE+1;
         }
         //for (int i=primerBL;i <= inodo.tamEnBytesLog;i++) {
-            bloquesLiberados += liberar_bloques_inodo(primerBL, &inodo);
+            bloquesLiberados = liberar_bloques_inodo(primerBL, &inodo);
         //}
         inodo.mtime = time(&timer);
         inodo.ctime = time(&timer);
