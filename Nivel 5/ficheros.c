@@ -9,8 +9,8 @@
     mi_write_f: Escribe el contenido procedente de un buffer de memoria, buf_original, de tamaño nbytes, en un fichero/directorio
     input: unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes
     output: 0
-    uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    uses: bread(),bwrite(), traducir_bloque_inodo(), leer_inodo(), memcpy(), leer_inodo(), escribir_inodo()
+    used by: escribir()
 */
 int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
@@ -62,8 +62,8 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
     mi_read_f: Lee información de un fichero/directorio y la almacena en un buffer de memoria, buf_original
     input: unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes
     output: número de bytes leídos
-    uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    uses: bread(),bwrite(), leer_inodo(), traducir_bloque_inodo(), memcpy(), leer_inodo(), escribir_inodo()
+    used by: leer()
 */
 int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
@@ -150,8 +150,8 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     mi_chmod_f: Cambia los permisos de un fichero/directorio con el valor que indique el argumento permisos
     input: unsigned int ninodo, unsigned char permisos
     output: 0
-    uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    uses: leer_inodo(), escribir_inodo()
+    used by: permitir()
 */
 int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
     struct inodo inodo;

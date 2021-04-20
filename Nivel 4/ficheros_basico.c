@@ -315,7 +315,7 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
     reservar_inodo: encuentra el primer inodo libre, lo reserva , devuelve su número y 
                     actualiza la lista enlazada de inodos libres.
     input: unsigned char tipo, unsigned char permisos
-    output: 0posInodoReservado on success / -1 on failure
+    output: posInodoReservado on success / -1 on failure
     uses: bread(), bwrite(), leer_inodo(), escribir_inodo()
     used by: mi_mkfs(), leer_sf()
 */

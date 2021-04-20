@@ -3,6 +3,7 @@
     Antoni Payeras Munar
     Dawid Michal Roch Móll
 */
+
 #include "bloques.h"
 
 static int descriptor = 0;
@@ -12,7 +13,7 @@ static int descriptor = 0;
     input: const char *camino
     output: int descriptor
     uses: umask(),open(),perror()
-    used by: mi_mkfs->main()
+    used by: mi_mkfs->main(), leer_sf(), leer.c, permitir.c
 */
 int bmount(const char *camino) {
     umask(000);
@@ -31,7 +32,7 @@ int bmount(const char *camino) {
     input: none
     output: 0 on success / -1 on failure
     uses: close(),perror()
-    used by: mi_mkfs->main()
+    used by: mi_mkfs->main(), leer_sf(), leer(), permitir()
 */
 int bumount() {
     if (close(descriptor) == -1) {
@@ -47,7 +48,7 @@ int bumount() {
     input: unsigned int nbloque, const void *buf
     output: BLOCKSIZE on success / -1 on failure
     uses: lseek(),write(),perror()
-    used by: mi_mkfs->main()
+    used by: mi_mkfs() y muchas de las funciones de ficheros_basico.c usan esta función
 */
 int bwrite(unsigned int nbloque, const void *buf) {
     off_t desplazamiento = nbloque * BLOCKSIZE;
@@ -66,7 +67,7 @@ int bwrite(unsigned int nbloque, const void *buf) {
     input: unsigned int nbloque, void *buf
     output: BLOCKSIZE on success / -1 on failure
     uses: lseek(),sizeof(),read(),perror()
-    used by:
+    used by: mi_mkfs() y muchas de las funciones de ficheros_basico.c usan esta función
 */
 int bread(unsigned int nbloque, void *buf) {
     off_t desplazamiento = nbloque * BLOCKSIZE;

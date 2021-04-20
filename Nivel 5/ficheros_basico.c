@@ -3,6 +3,7 @@
     Antoni Payeras Munar
     Dawid Michal Roch Móll
 */
+
 #include "ficheros_basico.h"
 
 /*
@@ -201,7 +202,7 @@ char leer_bit (unsigned int nbloque) {
     input: none
     output: 0
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: traducir_bloque_inodo()
 */
 int reservar_bloque() {
     struct superbloque SB;
@@ -254,8 +255,8 @@ int reservar_bloque() {
     liberar_bloque:libera un bloque determinado
     input: unsigned int nbloque
     output: 0
-    uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    uses: bread(),bwrite(), escribir_bit()
+    used by: escribir()
 */
 int liberar_bloque(unsigned int nbloque) {
     struct superbloque SB;
@@ -273,7 +274,7 @@ int liberar_bloque(unsigned int nbloque) {
     input: unsigned int ninodo, struct inodo inodo
     output: 0
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: reservar_inodo(), traducir_bloque_inodo(), mi_write_f(), mi_read_f(), mi_chmod_f()
 */
 int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
     struct superbloque SB;
@@ -293,7 +294,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
     input: unsigned int ninodo, struct inodo *inodo
     output: 0
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: reservar_inodo(), traducir_bloque_inodo(), mi_write_f(), mi_read_f(), mi_chmod_f(), leer()
 */
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
     struct superbloque SB;
@@ -313,9 +314,9 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
     reservar_inodo: encuentra el primer inodo libre (dato almacenado en el superbloque), 
 		lo reserva (con la ayuda de la función escribir_inodo()), devuelve su número y actualiza la lista enlazada de inodos libres.
     input: unsigned char tipo, unsigned char permisos
-    output: 0
+    output: posInodoReservado on success / -1 on failure
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: mi_mkfs()
 */
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     struct superbloque SB;
@@ -350,7 +351,14 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     printf("Error: no hay inodos libres");
     return -1;
 }
-
+/*
+    obtener_nRangoBL: obtiene el rango de punteros en el que se sitúa el
+                      bloque lógico que se busca.
+    input: struct inodo *inodo, unsigned int nblogico, insigned int *ptr
+    output: rango del bloque lógico
+    uses: ~
+    used by: traducir_bloque_inodo()
+*/
 int obtener_nRangoBL(struct inodo *inodo,unsigned int nblogico,unsigned int *ptr) {
     if (nblogico<DIRECTOS) {
         *ptr = inodo->punterosDirectos[nblogico];
@@ -371,6 +379,14 @@ int obtener_nRangoBL(struct inodo *inodo,unsigned int nblogico,unsigned int *ptr
     }
 }
 
+/*
+    obtener_indice: generaliza la obtención de los índices de
+                    los bloques de punteros.
+    input: unsigned int nblogico, unsigned int nivel_punteros
+    output: indice
+    uses: ~
+    used by: traducir_bloque_inodo()
+*/ 
 int obtener_indice(unsigned int nblogico, unsigned int nivel_punteros) {
     if (nblogico<DIRECTOS) {
         return nblogico;
@@ -400,7 +416,7 @@ int obtener_indice(unsigned int nblogico, unsigned int nivel_punteros) {
     input: unsigned int ninodo, unsigned int nblogico, char reservar
     output: 0
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: mi_write_f(), mi_read_f()
 */
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned char reservar){
     struct inodo inodo;
