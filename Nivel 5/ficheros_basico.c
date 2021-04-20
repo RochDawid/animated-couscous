@@ -351,6 +351,7 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     printf("Error: no hay inodos libres");
     return -1;
 }
+
 /*
     obtener_nRangoBL: obtiene el rango de punteros en el que se sitúa el
                       bloque lógico que se busca.

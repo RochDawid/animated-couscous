@@ -16,7 +16,6 @@ int main(int argc,char **argv) {
         leidos = mi_read_f(ninodo,buffer,offset,tambuffer);
         contadorLeidos = leidos;
         while (leidos > 0) {
-            //fputs(buffer,fichero);
             if (argv[3] && argv[4]) {
                 fwrite(buffer,sizeof(char),sizeof(buffer),fichero);
             }

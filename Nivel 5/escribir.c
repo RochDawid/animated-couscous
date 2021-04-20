@@ -5,7 +5,7 @@
 */
 #include "ficheros.h"
 
-int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
+int main(int argc,char **argv) {
     if (argv[1] && argv[2]) {
         bmount(argv[1]);
         int diferentes_inodos;
@@ -18,8 +18,6 @@ int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
         if (diferentes_inodos == 0) { 
             ninodo = reservar_inodo('f',6);
         }
-        //FILE *fichero;
-        //fichero = fopen(argv[2],"r");
         unsigned int arrayOffset [] = {9000,209000,30725000,409605000,480000000};
         char buffer[BLOCKSIZE];
         int length;
@@ -28,12 +26,8 @@ int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
         
         length = strlen(argv[2]);
         fprintf(stderr,"\nlongitud texto : %d\n",length);
-        //strcpy(buffer, argv[2]);
-        //memcpy(buffer,argv[2],BLOCKSIZE);
-        
-        //while (fgets(buffer,BLOCKSIZE,fichero) != NULL && i < 5) {
+
         while (i < 5) {
-            //length = strlen(buffer);
             if (diferentes_inodos == 1) {
                 ninodo = reservar_inodo('f',6);
             }
