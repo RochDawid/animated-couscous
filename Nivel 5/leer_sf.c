@@ -7,10 +7,10 @@
 #include "ficheros_basico.h"
 
 int main() {
-    bmount("disco");
+    if (bmount("disco") < 0) return -1;
     struct superbloque sb;
     
-    bread(posSB,&sb);
+    if (bread(posSB,&sb) < 0) return -1;
     printf("\nDATOS DEL SUPERBLOQUE\n");
     printf("posPrimerBloqueMB = %d\n",sb.posPrimerBloqueMB);
     printf("posUltimoBloqueMB = %d\n",sb.posUltimoBloqueMB);

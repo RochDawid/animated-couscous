@@ -41,7 +41,7 @@ int tamAI(unsigned int ninodos) {
     input: unsigned int nbloques, unsigned int ninodos
     output: BLOCKSIZE on success / -1 on failure
     uses: tamMB(),tamAI(),bwrite()
-    used by: mi_mkfs()
+    used by: mi_mkfs(), leer_sf()
 */
 int initSB(unsigned int nbloques, unsigned int ninodos) {
     struct superbloque SB;
@@ -66,11 +66,11 @@ int initSB(unsigned int nbloques, unsigned int ninodos) {
     input: none
     output: BLOCKSIZE on success / -1 on failure
     uses: bread(),bwrite()
-    used by: mi_mkfs()
+    used by: mi_mkfs(), leer_sf()
 */
 int initMB() {
     struct superbloque SB;
-    bread(posSB,&SB);
+    if (bread(posSB,&SB) < 0) return -1;
     unsigned char bufferMB[BLOCKSIZE];
     memset(bufferMB,255,BLOCKSIZE);
     int bitsMetadatos = (tamSB+tamMB(SB.totBloques)+tamAI(SB.totInodos));
@@ -79,7 +79,7 @@ int initMB() {
     int posbyte = (bitsMetadatos / 8);
     int posbit = (bitsMetadatos % 8);
     for (int i = SB.posPrimerBloqueMB;i < SB.posPrimerBloqueMB+nbloqueabs;i++) {
-        bwrite(i,bufferMB);
+        if (bwrite(i,bufferMB) < 0) return -1;
     }
 
     // int array con los valores de la potencia de 2
@@ -96,12 +96,11 @@ int initMB() {
         bufferMB[i]=0;
     }
 
-    bwrite(nbloqueabs+SB.posPrimerBloqueMB,bufferMB);
+    if (bwrite(nbloqueabs+SB.posPrimerBloqueMB,bufferMB) < 0) return -1;
     memset(bufferMB,0,BLOCKSIZE);
     for (int i = nbloqueabs+SB.posPrimerBloqueMB+1;i <= SB.posUltimoBloqueMB;i++) {
-        bwrite(i,bufferMB);
-    }  
-
+        if (bwrite(i,bufferMB) < 0) return -1;
+    } 
     // actualizar cantidad de bloques libres
     SB.cantBloquesLibres = SB.cantBloquesLibres - bitsMetadatos;
 
@@ -113,12 +112,12 @@ int initMB() {
     input: none
     output: 0
     uses: bread(),bwrite()
-    used by: mi_mkfs()
+    used by: mi_mkfs(), leer_sf()
 */
 int initAI() {
     struct inodo inodos[BLOCKSIZE/INODOSIZE];
     struct superbloque SB;
-    bread(posSB,&SB);
+    if (bread(posSB,&SB) < 0) return -1;
     int contInodos = SB.posPrimerInodoLibre + 1;
     
     // enlazamiento y escritura en memoria virtual de los inodos libres
@@ -133,7 +132,7 @@ int initAI() {
                 inodos[j].punterosDirectos[0] = UINT_MAX;
             }
         }
-        bwrite(i, inodos);
+        if (bwrite(i, inodos) < 0) return -1;
     }
 
     return 0;
@@ -141,25 +140,25 @@ int initAI() {
 
 /*
     escribir_bit: esta función escribe el valor indicado por el parámetro bit: 0 (libre) ó 
-		            1 (ocupado) en un determinado bit del MB que representa el bloque nbloque.
+		1 (ocupado) en un determinado bit del MB que representa el bloque nbloque.
     input: unsigned int nbloque, unsigned int bit
     output: 0
     uses: bread(),bwrite()
-    used by: reservar_bloque(), liberar_bloque()
+    used by: mi_mkfs(), leer_sf()
 */
 int escribir_bit(unsigned int nbloque, unsigned int bit) {
     struct superbloque SB;
     unsigned char bufferMB[BLOCKSIZE];
 
-    bread(posSB,&SB);
+    if (bread(posSB,&SB) < 0) return -1;
     int posbyte = nbloque / 8;
     int posbit = nbloque % 8;
     int nbloqueMB = posbyte / BLOCKSIZE;
     int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
 
-    bread(nbloqueabs, bufferMB);
+    if (bread(nbloqueabs, bufferMB) < 0) return -1;
     unsigned char mascara = 128;
-    posbyte = posbyte % BLOCKSIZE;
+    posbyte %= BLOCKSIZE;
     mascara >>= posbit; // nos desplazamos al bit que hay que cambiar
     
     if (bit == 1) {
@@ -174,22 +173,21 @@ int escribir_bit(unsigned int nbloque, unsigned int bit) {
 /*
     leer_bit: lee un determinado bit del MB y devuelve el valor del bit leído.
     input: unsigned int nbloque, unsigned int bit
-    output: mascara
+    output: 0
     uses: bread(),bwrite()
-    used by: leer_sf()
+    used by: mi_mkfs(), leer_sf()
 */
 char leer_bit (unsigned int nbloque) {
     struct superbloque SB;
     unsigned char bufferMB[BLOCKSIZE];
 
-    bread(posSB,&SB);
+    if (bread(posSB,&SB) < 0) return -1;
     int posbyte = nbloque / 8;
     int posbit = nbloque % 8;
     int nbloqueMB = posbyte / BLOCKSIZE;
     int nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
-    printf("\nleer_bit(%d) : posbyte: %d, posbit: %d, nbloqueMB: %d, nbloqueabs: %d\n",nbloque, posbyte,posbit,nbloqueMB,nbloqueabs);
 
-    bread(nbloqueabs,bufferMB);
+    if (bread(nbloqueabs,bufferMB) < 0) return -1;
     unsigned char mascara = 128;
     posbyte = posbyte % BLOCKSIZE;
     mascara >>= posbit; // nos desplazamos al bit que hay que cambiar
@@ -200,24 +198,24 @@ char leer_bit (unsigned int nbloque) {
 }
 
 /*
-    reservar_bloque: encuentra el primer bloque libre, consultando el MB, lo ocupa y devuelve su posición.
+    reservar_bloque: encuentra el primer bloque libre, consultando el MB, lo ocupa (con la ayuda de la función escribir_bit()) y devuelve su posición.
     input: none
     output: 0
     uses: bread(),bwrite()
-    used by: leer_sf()
+    used by: traducir_bloque_inodo()
 */
 int reservar_bloque() {
     struct superbloque SB;
-    bread(posSB,&SB);
+    if (bread(posSB,&SB) < 0) return -1;
 
     if (SB.cantBloquesLibres != 0) {
         unsigned char bufferaux[BLOCKSIZE];
         unsigned char bufferMB[BLOCKSIZE];
         memset(bufferaux,255,BLOCKSIZE);
-        int encontrado = 0;
         unsigned int posBloqueMB = SB.posPrimerBloqueMB;
-        for (;(posBloqueMB<=SB.posUltimoBloqueMB) && encontrado==0;posBloqueMB++) { //estalviar int posant es memcmp a nes bucle
-            bread(posBloqueMB,bufferMB);
+        int encontrado = 0;
+        for (;(posBloqueMB<=SB.posUltimoBloqueMB) && encontrado==0;posBloqueMB++) {
+            if (bread(posBloqueMB,bufferMB) < 0) return -1;
             if (memcmp(bufferMB,bufferaux,BLOCKSIZE) != 0) { // primer byte con un 0 en el MB
                 encontrado = 1;
             }
@@ -238,12 +236,13 @@ int reservar_bloque() {
             bufferMB[posbyte] <<= 1; // desplazamiento de bits a la izquierda
             posbit++;
         }
+
         unsigned int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
-        escribir_bit(nbloque, 1);
+        if (escribir_bit(nbloque, 1) < 0) return -1;
         SB.cantBloquesLibres--;
-        bwrite(posSB,&SB);
+        if (bwrite(posSB,&SB) < 0) return -1;
         memset(bufferaux,0,BLOCKSIZE);
-        bwrite(nbloque,bufferaux);
+        if (bwrite(nbloque,bufferaux) < 0) return -1;
 
         return nbloque;
     }
@@ -255,16 +254,16 @@ int reservar_bloque() {
 /*
     liberar_bloque:libera un bloque determinado
     input: unsigned int nbloque
-    output: nbloque
+    output: 0
     uses: bread(),bwrite(), escribir_bit()
-    used by: leer_sf()
+    used by: escribir.c
 */
 int liberar_bloque(unsigned int nbloque) {
     struct superbloque SB;
-    escribir_bit(nbloque, 0);
-    bread(posSB,&SB);
+    if (escribir_bit(nbloque, 0) < 0) return -1;
+    if (bread(posSB,&SB) < 0) return -1;
     SB.cantBloquesLibres++;
-    bwrite(posSB,&SB);
+    if (bwrite(posSB,&SB) < 0) return -1;
 
     return nbloque;
 }
@@ -275,61 +274,61 @@ int liberar_bloque(unsigned int nbloque) {
     input: unsigned int ninodo, struct inodo inodo
     output: 0
     uses: bread(),bwrite()
-    used by: reservar_inodo()
+    used by: reservar_inodo(), traducir_bloque_inodo(), mi_write_f(), mi_read_f(), mi_chmod_f()
 */
 int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
     struct superbloque SB;
     struct inodo inodos[BLOCKSIZE/INODOSIZE];
 
-    bread(posSB,&SB);
+    if (bread(posSB,&SB) < 0) return -1;
     int bloqueInodo = SB.posPrimerBloqueAI + ninodo/(BLOCKSIZE/INODOSIZE);
     int indiceInodo = ninodo%(BLOCKSIZE/INODOSIZE);
 
-    bread(bloqueInodo,inodos); // lectura del bloque de inodos para conservar el valor del resto de inodos
+    if (bread(bloqueInodo,inodos) < 0) return -1; // lectura del bloque de inodos para conservar el valor del resto de inodos
     inodos[indiceInodo] = inodo;
     return bwrite(bloqueInodo, inodos);
 }
 
 /*
-    leer_inodo: lee un determinado inodo del array de inodos para volcarlo en una variable 
-                de tipo struct inodo pasada por referencia.
+    leer_inodo: lee un determinado inodo del array de inodos para volcarlo en una variable de tipo struct inodo pasada por referencia.
     input: unsigned int ninodo, struct inodo *inodo
     output: 0
-    uses: bread()
-    used by: reservar_inodo(), leer_sf()
+    uses: bread(),bwrite()
+    used by: reservar_inodo(), traducir_bloque_inodo(), mi_write_f(), mi_read_f(), mi_chmod_f(), leer.c
 */
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
     struct superbloque SB;
     struct inodo inodos[BLOCKSIZE/INODOSIZE];
 
-    bread(posSB,&SB);
+    if (bread(posSB,&SB) < 0) return -1;
     int bloqueInodo = SB.posPrimerBloqueAI + ninodo/(BLOCKSIZE/INODOSIZE);
     int indiceInodo = ninodo%(BLOCKSIZE/INODOSIZE);
 
-    bread(bloqueInodo,inodos); // lectura del bloque de inodos
+    if (bread(bloqueInodo,inodos) < 0) return -1; // lectura del bloque de inodos
     *inodo = inodos[indiceInodo];
 
     return 0; 
 }
 
 /*
-    reservar_inodo: encuentra el primer inodo libre, lo reserva , devuelve su número y 
-                    actualiza la lista enlazada de inodos libres.
+    reservar_inodo: encuentra el primer inodo libre (dato almacenado en el superbloque), 
+		lo reserva (con la ayuda de la función escribir_inodo()), devuelve su número y actualiza la lista enlazada de inodos libres.
     input: unsigned char tipo, unsigned char permisos
-    output: 0posInodoReservado on success / -1 on failure
-    uses: bread(), bwrite(), leer_inodo(), escribir_inodo()
-    used by: mi_mkfs(), leer_sf()
+    output: posInodoReservado on success / -1 on failure
+    uses: bread(),bwrite()
+    used by: mi_mkfs()
 */
 int reservar_inodo(unsigned char tipo, unsigned char permisos) {
     struct superbloque SB;
-    bread(posSB,&SB);
+    if (bread(posSB,&SB) < 0) return -1;
     if (SB.cantInodosLibres != 0) {
         struct inodo inodo;
         unsigned int posInodoReservado = SB.posPrimerInodoLibre;
 
         // hacemos que el primer inodo libre sea el siguiente al que vamos a coger
-        leer_inodo(posInodoReservado,&inodo);
+        if (leer_inodo(posInodoReservado,&inodo) < 0) return -1;
         SB.posPrimerInodoLibre = inodo.punterosDirectos[0];
+
 
         // definimos el inodo con sus respectivos atributos
         inodo.permisos = permisos;
@@ -342,9 +341,9 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos) {
         memset(inodo.punterosIndirectos,0,sizeof(unsigned int)*3);
 
         // escribimos el inodo en la posición correspondiente
-        escribir_inodo(posInodoReservado, inodo);
+        if (escribir_inodo(posInodoReservado, inodo) < 0) return -1;
         SB.cantInodosLibres--; // reducimos el número de inodos libres en una unidad
-        bwrite(posSB,&SB); // guardamos los cambios hechos al superbloque
+        if (bwrite(posSB,&SB) < 0) return -1; // guardamos los cambios hechos al superbloque
 
         return posInodoReservado;
     }

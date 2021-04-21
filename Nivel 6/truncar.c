@@ -3,21 +3,22 @@
     Antoni Payeras Munar
     Dawid Michal Roch Móll
 */
+
 #include "ficheros.h"
 
 int main(int argc,char **argv) {
     if (argv[1] && argv[2] && argv[3]) {
         int ninodo = atoi(argv[2]);
         int nbytes = atoi(argv[3]);
-        bmount(argv[1]);
+        if (bmount(argv[1]) < 0) return -1;
 
         if (nbytes == 0) {
-            liberar_inodo(ninodo);
+            if (liberar_inodo(ninodo) < 0) return -1;
         } else {
-            mi_truncar_f(ninodo,nbytes);
+            if (mi_truncar_f(ninodo,nbytes) < 0) return -1;
         }
         struct inodo inodo;
-        leer_inodo(ninodo,&inodo);
+        if (leer_inodo(ninodo,&inodo) < 0) return -1;
         struct tm *ts;
         char atime[80];
         char mtime[80];

@@ -7,10 +7,10 @@
 #include "ficheros_basico.h"
 
 int main() {
-    bmount("disco");
+    if (bmount("disco") < 0) return -1;
     struct superbloque sb;
 
-    bread(posSB,&sb);
+    if (bread(posSB,&sb) < 0) return -1;
     printf("DATOS DEL SUPERBLOQUE\n");
     printf("posPrimerBloqueMB = %d\n",sb.posPrimerBloqueMB);
     printf("posUltimoBloqueMB = %d\n",sb.posUltimoBloqueMB);
@@ -25,16 +25,16 @@ int main() {
     printf("totBloques = %d\n",sb.totBloques);
     printf("totInodos = %d\n",sb.totInodos);
 
-    reservar_inodo('f',6);
+    if (reservar_inodo('f',6) < 0) return -1;
 
     printf("\nINODO 1. TRADUCCION DE LOS BLOQUES LOGICOS 8, 204, 30.004, 400.004 y 468.750\n");
     int bloquesLog[] = {8, 204, 30004, 400004, 468750};
     for (int i = 0;i < 5;i++) {
-        traducir_bloque_inodo(1,bloquesLog[i],1);
+        if (traducir_bloque_inodo(1,bloquesLog[i],1) < 0) return -1;
     }
     
     struct inodo inodo;
-    leer_inodo(1,&inodo);
+    if (leer_inodo(1,&inodo) < 0) return -1;
     struct tm *ts;
     char atime[80];
     char mtime[80];
@@ -57,7 +57,7 @@ int main() {
     printf("tamEnBytesLog: %d\n",inodo.tamEnBytesLog);
     printf("numBloquesOcupados: %d\n",inodo.numBloquesOcupados);
 
-    bread(posSB,&sb);
+    if (bread(posSB,&sb) < 0) return -1;
     printf("\nSB.posPrimerInodoLibre : %d\n",sb.posPrimerInodoLibre);
 
 /*    printf("\nsizeof struct superbloque: %d\n",(int) sizeof(sb));

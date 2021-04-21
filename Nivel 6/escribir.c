@@ -5,9 +5,9 @@
 */
 #include "ficheros.h"
 
-int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
+int main(int argc,char **argv) {
     if (argv[1] && argv[2]) {
-        bmount(argv[1]);
+        if (bmount(argv[1]) < 0) return -1;
         int diferentes_inodos;
         if (argv[3]) {
             diferentes_inodos = atoi(argv[3]);
@@ -17,9 +17,8 @@ int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
         unsigned int ninodo;
         if (diferentes_inodos == 0) { 
             ninodo = reservar_inodo('f',6);
+            if (ninodo == -1) return -1;
         }
-        //FILE *fichero;
-        //fichero = fopen(argv[2],"r");
         unsigned int arrayOffset [] = {9000,209000,30725000,409605000,480000000};
         char buffer[BLOCKSIZE];
         int length;
@@ -28,30 +27,27 @@ int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
         
         length = strlen(argv[2]);
         fprintf(stderr,"\nlongitud texto : %d\n",length);
-        //strcpy(buffer, argv[2]);
-        //memcpy(buffer,argv[2],BLOCKSIZE);
-        
-        //while (fgets(buffer,BLOCKSIZE,fichero) != NULL && i < 5) {
+
         while (i < 5) {
-            //length = strlen(buffer);
             if (diferentes_inodos == 1) {
                 ninodo = reservar_inodo('f',6);
+                if (ninodo == -1) return -1;
             }
             fprintf(stderr,"\nNº inodo reservado : %d\n",ninodo);
             fprintf(stderr,"offset : %d\n",arrayOffset[i]);
             int bytesEscritos = mi_write_f(ninodo,argv[2],arrayOffset[i],length);
             fprintf(stderr,"BytesEscritos : %d\n",bytesEscritos);
             struct STAT state;
-            mi_stat_f(ninodo, &state);
+            if (mi_stat_f(ninodo, &state) < 0) return -1;
             fprintf(stderr,"stat.tamEnBytesLog = %d\n",state.tamEnBytesLog);
             fprintf(stderr,"stat.numBloquesOcupados = %d\n\n",state.numBloquesOcupados);
             i++;        
         }
         
-        bumount();
+        if (bumount() < 0) return -1;
         return ninodo;
     } else {
-        perror("Sintaxis incorrecta, vuelva a intentarlo.\n");
+        perror("Error Sintax\n");
         return -1;
     }
 }

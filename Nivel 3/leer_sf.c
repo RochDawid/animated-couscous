@@ -7,10 +7,10 @@
 #include "ficheros_basico.h"
 
 int main() {
-    bmount("disco");
+    if (bmount("disco") < 0) return -1;
     struct superbloque sb;
 
-    bread(posSB,&sb);
+    if (bread(posSB,&sb) < 0) return -1;
     printf("DATOS DEL SUPERBLOQUE\n");
     printf("posPrimerBloqueMB = %d\n",sb.posPrimerBloqueMB);
     printf("posUltimoBloqueMB = %d\n",sb.posUltimoBloqueMB);
@@ -29,12 +29,13 @@ int main() {
     printf("sizeof struct inodo: %d\n",(int) sizeof(struct inodo));
     
     unsigned int nbloque = reservar_bloque();
-    bread(posSB,&sb);
+    if (nbloque == -1) return -1;
+    if (bread(posSB,&sb) < 0) return -1;
     printf("\nRESERVAMOS UN BLOQUE Y LUEGO LO LIBERAMOS\n");
     printf("Se ha reservado el bloque físico nº %d que era el 1º libre indicado por el MB\n",nbloque);
     printf("SB.cantBloquesLibres = %d\n",sb.cantBloquesLibres);
     liberar_bloque(nbloque);
-    bread(posSB,&sb);
+    if (bread(posSB,&sb) < 0) return -1;
     printf("Liberamos ese bloque y después SB.cantBloquesLibres = %d\n",sb.cantBloquesLibres);
 
     int testBits[] = {posSB,sb.posPrimerBloqueMB,sb.posUltimoBloqueMB,sb.posPrimerBloqueAI,sb.posUltimoBloqueAI,sb.posPrimerBloqueDatos,sb.posUltimoBloqueDatos};
@@ -44,7 +45,7 @@ int main() {
     }
 
     struct inodo inodo;
-    leer_inodo(sb.posInodoRaiz,&inodo);
+    if (leer_inodo(sb.posInodoRaiz,&inodo) < 0) return -1;
     struct tm *ts;
     char atime[80];
     char mtime[80];

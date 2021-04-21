@@ -6,10 +6,10 @@
 #include "ficheros_basico.h"
 
 int main() {
-    bmount("disco");
+    if (bmount("disco") < 0) return -1;
     struct superbloque sb;
 
-    bread(posSB,&sb);
+    if (bread(posSB,&sb) < 0) return -1;
     printf("DATOS DEL SUPERBLOQUE\n");
     printf("posPrimerBloqueMB = %d\n",sb.posPrimerBloqueMB);
     printf("posUltimoBloqueMB = %d\n",sb.posUltimoBloqueMB);
@@ -31,7 +31,7 @@ int main() {
 
     struct inodo arInodos[BLOCKSIZE/INODOSIZE];
     for (int i = sb.posPrimerBloqueAI; i <= sb.posUltimoBloqueAI; i++) {
-        bread(i,arInodos);
+        if (bread(i,arInodos) < 0) return -1;
         for (int j = 0; j < (BLOCKSIZE/INODOSIZE); j++) {
             printf("%d ",arInodos[j].punterosDirectos[0]);
         }

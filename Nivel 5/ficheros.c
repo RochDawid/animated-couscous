@@ -14,7 +14,7 @@
 */
 int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
-    leer_inodo(ninodo, &inodo);
+    if (leer_inodo(ninodo, &inodo) < 0) return -1;
     if ((inodo.permisos & 2) == 2) {
         unsigned int primerBL = offset/BLOCKSIZE;
         unsigned int ultimoBL = (offset + nbytes - 1)/BLOCKSIZE;
@@ -23,25 +23,26 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         unsigned int nbfisico = traducir_bloque_inodo(ninodo,primerBL,1);
         unsigned char buf_bloque[BLOCKSIZE];
         unsigned int bytesEscritos;
-        bread(nbfisico,buf_bloque);
+        if (bread(nbfisico,buf_bloque) < 0) return -1;
         if (primerBL == ultimoBL) { // escribimos en un único bloque
             memcpy(buf_bloque + desp1, buf_original,nbytes);
-            bwrite(nbfisico,buf_bloque);
+            if (bwrite(nbfisico,buf_bloque) < 0) return -1;
             bytesEscritos = desp2 - desp1 + 1;
         } else { // tenemos que escribir en más de un bloque
             memcpy(buf_bloque + desp1, buf_original,BLOCKSIZE - desp1);
             bytesEscritos = bwrite(nbfisico,buf_bloque) - desp1;
+            if (bytesEscritos < 0) return -1;
             for (int i = primerBL + 1;i < ultimoBL;i++) {
                 nbfisico = traducir_bloque_inodo(ninodo,i,1);
                 bytesEscritos += bwrite(nbfisico,buf_original + (BLOCKSIZE - desp1) + (i-primerBL-1)*BLOCKSIZE);
             }
             nbfisico = traducir_bloque_inodo(ninodo,ultimoBL,1);
-            bread(nbfisico,buf_bloque);
+            if (bread(nbfisico,buf_bloque) < 0) return -1;
             memcpy(buf_bloque, buf_original + (nbytes - desp2 - 1),desp2 + 1);
             bytesEscritos += bwrite(nbfisico,buf_bloque) - (BLOCKSIZE - (desp2 + 1));
         }
 
-        leer_inodo(ninodo,&inodo);
+        if (leer_inodo(ninodo,&inodo) < 0) return -1;
         time_t timer;
         if (offset > inodo.tamEnBytesLog || (offset + bytesEscritos) > inodo.tamEnBytesLog) {
             inodo.tamEnBytesLog = offset + bytesEscritos;
@@ -49,7 +50,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         }
         
         inodo.mtime = time(&timer);
-        escribir_inodo(ninodo,inodo);
+        if (escribir_inodo(ninodo,inodo) < 0) return -1;
             
         return bytesEscritos;
     } else {
@@ -68,7 +69,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
 int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
     unsigned int bytesLeidos = 0;
-    leer_inodo(ninodo, &inodo);
+    if (leer_inodo(ninodo, &inodo) < 0) return -1;
     if ((inodo.permisos & 4) == 4) {
         if (offset >= inodo.tamEnBytesLog) { // no podemos leer nada
             return bytesLeidos;
@@ -87,36 +88,34 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
 
         if (primerBL == ultimoBL) { // leemos de un único bloque
             if (nbfisico != -1) {
-                bread(nbfisico, buf_bloque);
+                if (bread(nbfisico, buf_bloque) < 0) return -1;
                 memcpy(buf_original, buf_bloque + desp1, nbytes);
             }
             bytesLeidos = desp2 - desp1 + 1;
         } else { // tenemos que leer en más de un bloque
             if (nbfisico != -1) {
-                bread(nbfisico, buf_bloque);
+                if (bread(nbfisico, buf_bloque) < 0) return -1;
                 memcpy(buf_original, buf_bloque + desp1,BLOCKSIZE - desp1);
             }
             bytesLeidos = BLOCKSIZE - desp1;
             for (int i = primerBL + 1;i < ultimoBL;i++) {
                 nbfisico = traducir_bloque_inodo(ninodo, i, 0);
-                if (nbfisico != -1) {
-                    bread(nbfisico, buf_bloque);
-                    memcpy(buf_original + (BLOCKSIZE - desp1) + (i-primerBL-1)*BLOCKSIZE, buf_bloque, BLOCKSIZE);
-                }
+                if (nbfisico == -1) return -1;
+                if (bread(nbfisico, buf_bloque) < 0) return -1;
+                memcpy(buf_original + (BLOCKSIZE - desp1) + (i-primerBL-1)*BLOCKSIZE, buf_bloque, BLOCKSIZE);
                 bytesLeidos += BLOCKSIZE;
             }
             nbfisico = traducir_bloque_inodo(ninodo, ultimoBL, 0);
-            if (nbfisico != -1) {
-                bread(nbfisico, buf_bloque);
-                memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque,desp2 + 1);
-            }
+            if (nbfisico == -1) return -1;
+            if (bread(nbfisico, buf_bloque) < 0) return -1;
+            memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque,desp2 + 1);
             bytesLeidos += desp2 + 1;
         }
         
-        leer_inodo(ninodo,&inodo);
+        if (leer_inodo(ninodo,&inodo) < 0) return -1;
         time_t timer;
         inodo.atime = time(&timer);
-        escribir_inodo(ninodo,inodo);
+        if (escribir_inodo(ninodo,inodo) < 0) return -1;
 
     } else {
         perror("Error: no dispone de permisos para leer el fichero/directorio.");
@@ -133,7 +132,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
 */
 int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     struct inodo inodo;
-    leer_inodo(ninodo, &inodo);
+    if (leer_inodo(ninodo, &inodo) < 0) return -1;
     p_stat->tipo = inodo.tipo;
     p_stat->atime = inodo.atime;
     p_stat->ctime = inodo.ctime;
@@ -156,10 +155,10 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
 int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
     struct inodo inodo;
     time_t timer;
-    leer_inodo(ninodo, &inodo);
+    if (leer_inodo(ninodo, &inodo) < 0) return -1;
     inodo.permisos = permisos;
     inodo.ctime = time(&timer);
-    escribir_inodo(ninodo, inodo);
+    if (escribir_inodo(ninodo, inodo) < 0) return -1;
 
     return 0;
 }

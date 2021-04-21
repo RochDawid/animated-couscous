@@ -7,7 +7,7 @@
 
 int main(int argc,char **argv) {
     if (argv[1]) {
-        bmount(argv[1]);
+        if (bmount(argv[1]) < 0) return -1;
         unsigned int ninodo = atoi(argv[2]);
         int offset = 0, leidos = 0, contadorLeidos = 0, tambuffer = 1500;
         char buffer[tambuffer];
@@ -19,6 +19,7 @@ int main(int argc,char **argv) {
         }
         memset(buffer,0,tambuffer);
         leidos = mi_read_f(ninodo,buffer,offset,tambuffer);
+        if (leidos == -1) return -1;
         contadorLeidos = leidos;
         while (leidos > 0) {
             if (argv[3] && argv[4]) {
@@ -28,19 +29,19 @@ int main(int argc,char **argv) {
             write(1,buffer,leidos);
             memset(buffer,0,tambuffer);
             leidos = mi_read_f(ninodo,buffer,offset,tambuffer);
-            
+            if (leidos == -1) return -1;
             contadorLeidos += leidos;
         }
         if (argv[3] && argv[4]) {
             fclose(fichero);
         }
         struct inodo inodo;
-        leer_inodo(ninodo,&inodo);
+        if (leer_inodo(ninodo,&inodo) < 0) return -1;
         
         sprintf(string,"\nbytes leidos : %d\n",contadorLeidos);
         write(2,string,strlen(string));
         fprintf(stderr,"tamEnBytesLog : %d\n",inodo.tamEnBytesLog); 
-        bumount();
+        if (bumount() < 0) return -1;
 
         return ninodo;
     }
