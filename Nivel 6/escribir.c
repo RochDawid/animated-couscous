@@ -51,7 +51,7 @@ int main(int argc,char **argv) { //VIGILAR SA SINTAXIS
         bumount();
         return ninodo;
     } else {
-        perror("Error Sintax\n");
+        perror("Sintaxis incorrecta, vuelva a intentarlo.\n");
         return -1;
     }
 }

@@ -40,6 +40,6 @@ int main(int argc,char **argv) {
         return ninodo;
     }
 
-    perror("Sintax Error\n");
+    perror("Sintaxis incorrecta, vuelva a intentarlo.\n");
     return -1;
 }
