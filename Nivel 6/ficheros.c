@@ -1,11 +1,16 @@
+/*
+    Sergi Moreno Pérez
+    Antoni Payeras Munar
+    Dawid Michal Roch Móll
+*/
 #include "ficheros.h"
 
 /*
     mi_write_f: Escribe el contenido procedente de un buffer de memoria, buf_original, de tamaño nbytes, en un fichero/directorio
     input: unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes
-    output: 0
-    uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    output: número de bytes escritos
+    uses: bread(),bwrite(), traducir_bloque_inodo(), leer_inodo(), memcpy(), leer_inodo(), escribir_inodo()
+    used by: escribir.c
 */
 int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
@@ -56,9 +61,9 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
 /*
     mi_read_f: Lee información de un fichero/directorio y la almacena en un buffer de memoria, buf_original
     input: unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes
-    output: 0
-    uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    output: número de bytes leídos
+    uses: bread(),bwrite(), leer_inodo(), traducir_bloque_inodo(), memcpy(), leer_inodo(), escribir_inodo()
+    used by: leer.c
 */
 int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
@@ -124,7 +129,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     input: unsigned int ninodo, struct STAT *p_stat
     output: 0
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: mi_mkfs.c, leer_sf.c
 */
 int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     struct inodo inodo;
@@ -145,8 +150,8 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     mi_chmod_f: Cambia los permisos de un fichero/directorio con el valor que indique el argumento permisos
     input: unsigned int ninodo, unsigned char permisos
     output: 0
-    uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    uses: leer_inodo(), escribir_inodo()
+    used by: permitir.c
 */
 int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
     struct inodo inodo;
@@ -163,9 +168,9 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
     mi_truncar_f: Trunca un fichero/directorio (correspondiente al nº de inodo, ninodo, pasado como argumento) 
                     a los bytes indicados como nbytes, liberando los bloques necesarios.
     input: unsigned int ninodo, unsigned int nbytes
-    output: 
-    uses: 
-    used by: 
+    output: int bloquesLiberados
+    uses: leer_inodo(), liberar_bloques_inodo, escribir_inodo
+    used by: truncar.c
 */
 int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) { // no se puede truncar  más allá del tamaño en bytes lóg del fich/direc
     struct inodo inodo;
@@ -178,9 +183,7 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) { // no se puede trun
         } else {
             primerBL = nbytes/BLOCKSIZE+1;
         }
-        //for (int i=primerBL;i <= inodo.tamEnBytesLog;i++) {
-            bloquesLiberados = liberar_bloques_inodo(primerBL, &inodo);
-        //}
+        bloquesLiberados = liberar_bloques_inodo(primerBL, &inodo);
         inodo.mtime = time(&timer);
         inodo.ctime = time(&timer);
         inodo.tamEnBytesLog = nbytes;

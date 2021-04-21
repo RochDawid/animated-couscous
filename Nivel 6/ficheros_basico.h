@@ -1,3 +1,8 @@
+/*
+    Sergi Moreno Pérez
+    Antoni Payeras Munar
+    Dawid Michal Roch Móll
+*/
 #include "bloques.h"
 #include <limits.h>
 #include <time.h>
