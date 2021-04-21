@@ -424,16 +424,14 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     unsigned int ptr = 0, ptr_ant = 0, nRangoBL, nivel_punteros, indice, salvar_inodo = 0; 
     unsigned int buffer[BLOCKSIZE / sizeof(unsigned int)];
     
-    nRangoBL = obtener_nRangoBL(&inodo, nblogico, &ptr); //0:D, 1:I0, 2:I1, 3:I2
-    nivel_punteros = nRangoBL;//el nivel_punteros +alto es el que cuelga del inodo
+    nRangoBL = obtener_nRangoBL(&inodo, nblogico, &ptr); // 0:D, 1:I0, 2:I1, 3:I2
+    nivel_punteros = nRangoBL; // el nivel_punteros +alto es el que cuelga del inodo
     
-    //iterar para cada nivel de indirectos
-    while (nivel_punteros > 0){
-        //no cuelgan bloques de punteros
-        if(!ptr){ 
+    while (nivel_punteros > 0){ // iterar para cada nivel de indirectos
+        if(!ptr){ // no cuelgan bloques de punteros
             if(!reservar) {
-                return -1; //error lectura bloque inexistente
-            } else { //reservar bloques punteros y crear enlaces desde inodo hasta datos
+                return -1; // error lectura bloque inexistente
+            } else { // reservar bloques punteros y crear enlaces desde inodo hasta datos
                 salvar_inodo = 1;
                 ptr = reservar_bloque();
                 inodo.numBloquesOcupados++;
