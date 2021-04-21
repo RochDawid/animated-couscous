@@ -256,7 +256,7 @@ int reservar_bloque() {
     input: unsigned int nbloque
     output: 0
     uses: bread(),bwrite(), escribir_bit()
-    used by: escribir()
+    used by: escribir.c
 */
 int liberar_bloque(unsigned int nbloque) {
     struct superbloque SB;
@@ -294,7 +294,7 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo) {
     input: unsigned int ninodo, struct inodo *inodo
     output: 0
     uses: bread(),bwrite()
-    used by: reservar_inodo(), traducir_bloque_inodo(), mi_write_f(), mi_read_f(), mi_chmod_f(), leer()
+    used by: reservar_inodo(), traducir_bloque_inodo(), mi_write_f(), mi_read_f(), mi_chmod_f(), leer.c
 */
 int leer_inodo(unsigned int ninodo, struct inodo *inodo) {
     struct superbloque SB;

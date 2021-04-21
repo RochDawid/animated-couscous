@@ -10,7 +10,7 @@
     input: unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes
     output: 0
     uses: bread(),bwrite(), traducir_bloque_inodo(), leer_inodo(), memcpy(), leer_inodo(), escribir_inodo()
-    used by: escribir()
+    used by: escribir.c
 */
 int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
@@ -63,7 +63,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
     input: unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes
     output: número de bytes leídos
     uses: bread(),bwrite(), leer_inodo(), traducir_bloque_inodo(), memcpy(), leer_inodo(), escribir_inodo()
-    used by: leer()
+    used by: leer.c
 */
 int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
@@ -129,7 +129,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     input: unsigned int ninodo, struct STAT *p_stat
     output: 0
     uses: bread(),bwrite()
-    used by: mi_mkfs(), leer_sf()
+    used by: mi_mkfs.c, leer_sf.c
 */
 int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     struct inodo inodo;
@@ -151,7 +151,7 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
     input: unsigned int ninodo, unsigned char permisos
     output: 0
     uses: leer_inodo(), escribir_inodo()
-    used by: permitir()
+    used by: permitir.c
 */
 int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
     struct inodo inodo;
