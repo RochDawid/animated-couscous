@@ -402,16 +402,14 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
     unsigned int ptr = 0, ptr_ant = 0, nRangoBL, nivel_punteros, indice, salvar_inodo = 0; 
     unsigned int buffer[BLOCKSIZE / sizeof(unsigned int)];
     
-    nRangoBL = obtener_nRangoBL(&inodo, nblogico, &ptr); //0:D, 1:I0, 2:I1, 3:I2
-    nivel_punteros = nRangoBL;//el nivel_punteros +alto es el que cuelga del inodo
+    nRangoBL = obtener_nRangoBL(&inodo, nblogico, &ptr); // 0:D, 1:I0, 2:I1, 3:I2
+    nivel_punteros = nRangoBL; // el nivel_punteros +alto es el que cuelga del inodo
     
-    //iterar para cada nivel de indirectos
-    while (nivel_punteros > 0){
-        //no cuelgan bloques de punteros
-        if(!ptr){ 
+    while (nivel_punteros > 0){ // iterar para cada nivel de indirectos
+        if(!ptr){ // no cuelgan bloques de punteros
             if(!reservar) {
-                return -1; //error lectura bloque inexistente
-            } else { //reservar bloques punteros y crear enlaces desde inodo hasta datos
+                return -1; // error lectura bloque inexistente
+            } else { // reservar bloques punteros y crear enlaces desde inodo hasta datos
                 salvar_inodo = 1;
                 ptr = reservar_bloque();
                 inodo.numBloquesOcupados++;
@@ -469,33 +467,14 @@ int liberar_inodo(unsigned int ninodo) {
     
     leer_inodo(ninodo,&inodo);
     int bloquesLiberados = 0;
-    int bloqueFisico;
-    int ultimoBL;
-/*     if (inodo.tamEnBytesLog % BLOCKSIZE == 0){ // obtenemos último bloque lógico del inodo
-        ultimoBL = inodo.tamEnBytesLog / BLOCKSIZE-1;
-    } else {
-        ultimoBL = inodo.tamEnBytesLog / BLOCKSIZE;
-    } */
     
     bloquesLiberados += liberar_bloques_inodo(0,&inodo);
-/*     for (int i = 1;i <= ultimoBL;i++) {
-        bloqueFisico = traducir_bloque_inodo(ninodo,i,0);
-        if (leer_bit(bloqueFisico) != 0) {
-            bloquesLiberados += liberar_bloques_inodo(i,&inodo);
-        }
-    } */
     inodo.numBloquesOcupados -= bloquesLiberados;
     inodo.tipo = 'l';
     inodo.tamEnBytesLog = 0;
     bread(posSB,&SB);
     inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
     SB.posPrimerInodoLibre = ninodo;
-    /* fprintf(stderr,"\nINODO : %d\n",ninodo);
-    fprintf(stderr,"tipo=%c\n",inodo.tipo);
-    fprintf(stderr,"permisos=%d\n",inodo.permisos);
-    fprintf(stderr,"nlinks=%d\n",inodo.nlinks);
-    fprintf(stderr,"tamEnBytesLog=%d\n",inodo.tamEnBytesLog);
-    fprintf(stderr,"numBloquesOcupados=%d\n",inodo.numBloquesOcupados); */
     SB.cantInodosLibres++;
     escribir_inodo(ninodo,inodo);
     bwrite(posSB,&SB);
