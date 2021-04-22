@@ -30,6 +30,7 @@ int main() {
     printf("\nRECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
 
     struct inodo arInodos[BLOCKSIZE/INODOSIZE];
+    // iteramos a través del array de inodos
     for (int i = sb.posPrimerBloqueAI; i <= sb.posUltimoBloqueAI; i++) {
         if (bread(i,arInodos) < 0) return -1;
         for (int j = 0; j < (BLOCKSIZE/INODOSIZE); j++) {

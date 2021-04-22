@@ -47,7 +47,8 @@ int main(int argc,char **argv) {
         if (bumount() < 0) return -1;
         return ninodo;
     } else {
-        perror("Error Sintax\n");
+        fprintf(stderr, "Sintaxis: escribir <nombre_dispositivo> <\"$(cat fichero)\"> <diferentes_inodos>
+            \n Offsets: 9000, 209000, 30725000, 409605000, 480000000 \n Si diferentes_inodos=0 se reserva un solo inodo para todos los offsets \n");
         return -1;
     }
 }

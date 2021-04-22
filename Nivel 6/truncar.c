@@ -42,6 +42,6 @@ int main(int argc,char **argv) {
         fprintf(stderr,"numBloquesOcupados=%d\n",inodo.numBloquesOcupados);
         return bumount();
     }
-    perror("Sintex error");
+    fprintf(stderr,"Sintaxis: truncar <disco> <ninodo> <nbytes> \n");
     return -1;
 }

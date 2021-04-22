@@ -442,9 +442,11 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                 inodo.numBloquesOcupados++;
                 inodo.ctime = time(NULL);
                 if(nivel_punteros == nRangoBL){
+                    //el bloque cuelga directamente del inodo
                     inodo.punterosIndirectos[nRangoBL-1] = ptr;
                     fprintf(stderr,"traducir_bloque_inodo()->inodo.punterosIndirectos[%d] = %d (reservado BF %d para punteros_nivel%d)\n",nRangoBL-1,ptr,ptr,nivel_punteros);
                 } else {
+                    //el bloque cuelga de otro bloque de puntero
                     buffer[indice] = ptr;
                     fprintf(stderr,"traducir_bloque_inodo()->punteros_nivel%d[%d] = %d (reservado BF %d para punteros_nivel%d)\n",nivel_punteros+1,indice,ptr,ptr,nivel_punteros);
                     if (bwrite(ptr_ant,buffer) < 0) return -1;
@@ -454,14 +456,14 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
         if (bread(ptr,buffer) < 0) return -1;
         indice = obtener_indice(nblogico, nivel_punteros);
         if (indice < 0) return -1;
-        ptr_ant = ptr;
-        ptr = buffer[indice];
+        ptr_ant = ptr; //guardamos el puntero
+        ptr = buffer[indice];// y lo desplazamos al siguiente nivel
         nivel_punteros--;
     }
     
-    if(!ptr){
+    if(!ptr){ //no existe bloque de datos
         if(!reservar) {
-            return -1;
+            return -1;  //error lectura ∄ bloque
         } else {
             salvar_inodo = 1;
             ptr = reservar_bloque();

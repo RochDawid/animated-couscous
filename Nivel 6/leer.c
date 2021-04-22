@@ -17,6 +17,7 @@ int main(int argc,char **argv) {
         if (argv[3] && argv[4]) {
             fichero = fopen(argv[4],"w");
         }
+        // leemos el fichero y acumulamos todos lo bytes leidos hasta el final
         memset(buffer,0,tambuffer);
         leidos = mi_read_f(ninodo,buffer,offset,tambuffer);
         if (leidos == -1) return -1;
