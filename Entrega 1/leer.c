@@ -47,6 +47,6 @@ int main(int argc,char **argv) {
         return ninodo;
     }
 
-    perror("Sintax Error\n");
+    perror("Sintaxis: leer <nombre_dispositivo>\n");
     return -1;
 }
