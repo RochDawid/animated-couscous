@@ -100,15 +100,17 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
             bytesLeidos = BLOCKSIZE - desp1;
             for (int i = primerBL + 1;i < ultimoBL;i++) {
                 nbfisico = traducir_bloque_inodo(ninodo, i, 0);
-                if (nbfisico == -1) return -1;
-                if (bread(nbfisico, buf_bloque) < 0) return -1;
-                memcpy(buf_original + (BLOCKSIZE - desp1) + (i-primerBL-1)*BLOCKSIZE, buf_bloque, BLOCKSIZE);
+                if (nbfisico != -1) {
+                    if (bread(nbfisico, buf_bloque) < 0) return -1;
+                    memcpy(buf_original + (BLOCKSIZE - desp1) + (i-primerBL-1)*BLOCKSIZE, buf_bloque, BLOCKSIZE);
+                }
                 bytesLeidos += BLOCKSIZE;
             }
             nbfisico = traducir_bloque_inodo(ninodo, ultimoBL, 0);
-            if (nbfisico == -1) return -1;
-            if (bread(nbfisico, buf_bloque) < 0) return -1;
-            memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque,desp2 + 1);
+            if (nbfisico != -1) {
+                if (bread(nbfisico, buf_bloque) < 0) return -1;
+                memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque,desp2 + 1);
+            }
             bytesLeidos += desp2 + 1;
         }
         

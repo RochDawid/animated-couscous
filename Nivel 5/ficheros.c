@@ -69,7 +69,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
 int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes) {
     struct inodo inodo;
     unsigned int bytesLeidos = 0;
-    if (leer_inodo(ninodo, &inodo) < 0) return -1;
+    if (leer_inodo(ninodo, &inodo)==-1) return -1;
     if ((inodo.permisos & 4) == 4) {
         if (offset >= inodo.tamEnBytesLog) { // no podemos leer nada
             return bytesLeidos;
@@ -88,34 +88,36 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
 
         if (primerBL == ultimoBL) { // leemos de un único bloque
             if (nbfisico != -1) {
-                if (bread(nbfisico, buf_bloque) < 0) return -1;
+                if (bread(nbfisico, buf_bloque) == -1) return -1;
                 memcpy(buf_original, buf_bloque + desp1, nbytes);
             }
             bytesLeidos = desp2 - desp1 + 1;
         } else { // tenemos que leer en más de un bloque
             if (nbfisico != -1) {
-                if (bread(nbfisico, buf_bloque) < 0) return -1;
+                if (bread(nbfisico, buf_bloque) == -1) return -1;
                 memcpy(buf_original, buf_bloque + desp1,BLOCKSIZE - desp1);
             }
             bytesLeidos = BLOCKSIZE - desp1;
             for (int i = primerBL + 1;i < ultimoBL;i++) {
                 nbfisico = traducir_bloque_inodo(ninodo, i, 0);
-                if (nbfisico == -1) return -1;
-                if (bread(nbfisico, buf_bloque) < 0) return -1;
-                memcpy(buf_original + (BLOCKSIZE - desp1) + (i-primerBL-1)*BLOCKSIZE, buf_bloque, BLOCKSIZE);
+                if (nbfisico != -1) {
+                    if (bread(nbfisico, buf_bloque) == -1) return -1;
+                    memcpy(buf_original + (BLOCKSIZE - desp1) + (i-primerBL-1)*BLOCKSIZE, buf_bloque, BLOCKSIZE);
+                }
                 bytesLeidos += BLOCKSIZE;
             }
             nbfisico = traducir_bloque_inodo(ninodo, ultimoBL, 0);
-            if (nbfisico == -1) return -1;
-            if (bread(nbfisico, buf_bloque) < 0) return -1;
-            memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque,desp2 + 1);
+            if (nbfisico != -1) {
+                if(bread(nbfisico, buf_bloque)==-1) return -1;
+                memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque,desp2 + 1);
+            }
             bytesLeidos += desp2 + 1;
         }
         
-        if (leer_inodo(ninodo,&inodo) < 0) return -1;
+        if(leer_inodo(ninodo,&inodo)==-1) return -1;
         time_t timer;
         inodo.atime = time(&timer);
-        if (escribir_inodo(ninodo,inodo) < 0) return -1;
+        if(escribir_inodo(ninodo,inodo)==-1) return -1;
 
     } else {
         perror("Error: no dispone de permisos para leer el fichero/directorio.");

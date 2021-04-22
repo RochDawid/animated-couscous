@@ -12,8 +12,8 @@ int main(int argc,char **argv) {
         int offset = 0, leidos = 0, contadorLeidos = 0, tambuffer = 1500;
         char buffer[tambuffer];
         FILE *fichero;
-        char string[128];
-
+        char string[128]; 
+        
         if (argv[3] && argv[4]) {
             fichero = fopen(argv[4],"w");
         }
