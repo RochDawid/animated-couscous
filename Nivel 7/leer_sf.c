@@ -6,6 +6,19 @@
 
 #include "directorios.h"
 
+void mostrar_buscar_entrada(char *camino, char reservar){
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+    int error;
+    printf("\ncamino: %s, reservar: %d\n", camino, reservar);
+    if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, reservar, 6)) < 0) {
+        mostrar_error_buscar_entrada(error);
+    }
+    printf("**********************************************************************\n");
+    return;
+}
+
 int main(int argc,char **argv) {
     if (argv[1]) {
         if (bmount(argv[1]) < 0) return -1;

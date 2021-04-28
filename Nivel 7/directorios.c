@@ -18,6 +18,8 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
         strcat(final, token);
     }
 
+    if (camino[strlen(camino)] == '/') ? tipo = 'd' : tipo = 'f';
+
     strcpy(inicial, token);
     printf("token %s\n", token);
     printf("inicial %s\n", inicial);
