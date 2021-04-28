@@ -11,11 +11,17 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
     const char s[2] = "/";
 
     // comprovar quins mètodes són necessaris
-    token = strtok(camino,s);
+    token = strtok(camino, s);
 
-    strcpy(inicial,token);
-    printf("token %s\n",token);
-    printf("inicial %s\n",inicial);
+    while (token != NULL) {
+        token = strtok(NULL, s);
+        strcat(final, token);
+    }
+
+    strcpy(inicial, token);
+    printf("token %s\n", token);
+    printf("inicial %s\n", inicial);
+    printf("final %s\n", final);
 }
 
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos) {
