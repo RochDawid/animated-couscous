@@ -7,25 +7,49 @@
 #include "directorios.h"
 
 int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
-    char *token;
-    const char s[2] = "/";
+    if (camino[0] == '/') {
+        char *dst = (camino+1);
+        char *token;
+        const char s[2] = "/";
 
-    // comprovar quins mètodes són necessaris
-    token = strtok(camino, s);
-    strcpy(inicial, token);
+        token = strchr(dst,'/');
+        strcpy(final,token);
 
-    while (token != NULL) {
-        token = strtok(NULL, s);
-        strcat(final, '/');
-        strcat(final, token);
+        // comprovar quins mètodes són necessaris
+        token = strtok(dst, s);
+        strcpy(inicial,token);
+
+        
+
+        if (final[0] == '/') {
+            tipo = 'd';
+        } else {
+            tipo = 'f';
+        }
+
+        return EXIT_SUCCESS;
+
+        printf("token %s\n", token);
+        printf("inicial %s\n", inicial);
+        printf("final %s\n", final);
     }
 
-    if (camino[strlen(camino)-1] == '/') ? tipo = 'd' : tipo = 'f';
-
-    printf("token %s\n", token);
-    printf("inicial %s\n", inicial);
-    printf("final %s\n", final);
+    return EXIT_FAILURE;
 }
+
+void mostrar_error_buscar_entrada(int error) {
+   // fprintf(stderr, "Error: %d\n", error);
+    switch (error) {
+        case -1: fprintf(stderr, "Error: Camino incorrecto.\n"); break;
+        case -2: fprintf(stderr, "Error: Permiso denegado de lectura.\n"); break;
+        case -3: fprintf(stderr, "Error: No existe el archivo o el directorio.\n"); break;
+        case -4: fprintf(stderr, "Error: No existe algún directorio intermedio.\n"); break;
+        case -5: fprintf(stderr, "Error: Permiso denegado de escritura.\n"); break;
+        case -6: fprintf(stderr, "Error: El archivo ya existe.\n"); break;
+        case -7: fprintf(stderr, "Error: No es un directorio.\n"); break;
+    }
+}
+
 
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos) {
     struct entrada *entrada;
@@ -34,6 +58,9 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     char final[strlen(camino_parcial)];
     char tipo;
     int cant_entradas_inodo, num_entrada_inodo;
+    unsigned char buffer[BLOCKSIZE];
+    unsigned int punteros[BLOCKSIZE/sizeof(unsigned int)];
+    struct entrada entradas[BLOCKSIZE/sizeof(struct entrada)];
 
     if (camino_parcial == "/") {
         *p_inodo = SB.posInodoRaiz;
@@ -41,13 +68,14 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         return 0;
     }
 
-    extraer_camino(camino_parcial, inicial, final, &tipo);
-    // controlar error
+    if (extraer_camino(camino_parcial, inicial, final, &tipo) == 1) return ERROR_CAMINO_INCORRECTO;
+
 
     leer_inodo(*p_inodo_dir, &inodo_dir);
-    // controlar error permisos lectura
+    if ((inodo_dir->permisos & 4) != 4) return ERROR_PERMISO_LECTURA;
 
     // calcular cantidad de entradas que tiene el inodo
+    cant_entradas_inodo = sizeof(struct inodo)/sizeof(struct entrada);
     num_entrada_inodo = 0;
     if (cant_entradas_inodo > 0) {
         // leer entrada
