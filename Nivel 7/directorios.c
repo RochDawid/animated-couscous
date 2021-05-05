@@ -87,12 +87,40 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
 
     if (inicial != entrada.nombre) {
         switch(reservar) {
-            case 0: // return ERROR_NO_EXISTE_ENTRADA_CONSULTA
+            case 0: return ERROR_NO_EXISTE_ENTRADA_CONSULTA;
             case 1: 
                 if (inodo_dir->tipo == 'f') {
-                    // return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO
+                    return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO;
                 }
-                
+                if ((inodo_dir->permisos & 6) != 6) return ERROR_PERMISO_ESCRITURA;
+                else {
+                    entrada->nombre = inicial;
+                    if (tipo = 'd') {
+                        if (final == "/") {
+                            entrada->ninodo = reservar_inodo('d', permisos);
+
+                        } else {
+                            return ERROR_NO_EXISTE_DIRECTORIO_INTERMEDIO;
+                        }
+                    } else {
+                        entrada->ninodo = reservar_inodo('f', permisos);
+                    }
+                    // escribir la entrada en el directorio padre
+                    // si error de escritura
+                    // si se había reservado un inodo para la entrada entonces liberar el inodo
+                    // return EXIT_FAILURE
+                }
         }
     }
+    // si hemos llegado al final del camino
+    // si ((num_entrada_inodo < cant_entradas_inodo) && (reservar=1))
+    // return ERROR_ENTRADA_YA_EXISTENTE
+    // fsi
+    // asignar a *p_inodo el numero de inodo del directorio o fichero creado o leido
+    // asignar a *p_entrada el número de su entrada dentro del último directorio que lo contiene
+    // return EXIT_SUCCESS
+    // si_no asignamos a *p_inodo_dir el puntero al inodo que se indica en la entrada encontrada
+    // devolver buscar_entrada (final, p_inodo_dir, p_inodo, p_entrada, reservar, permisos)
+    // fsi
+    // return EXIT_SUCCESS
 }
