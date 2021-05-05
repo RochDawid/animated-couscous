@@ -444,11 +444,11 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
                 if(nivel_punteros == nRangoBL){
                     //el bloque cuelga directamente del inodo
                     inodo.punterosIndirectos[nRangoBL-1] = ptr;
-                    fprintf(stderr,"traducir_bloque_inodo()->inodo.punterosIndirectos[%d] = %d (reservado BF %d para punteros_nivel%d)\n",nRangoBL-1,ptr,ptr,nivel_punteros);
+                    //fprintf(stderr,"traducir_bloque_inodo()->inodo.punterosIndirectos[%d] = %d (reservado BF %d para punteros_nivel%d)\n",nRangoBL-1,ptr,ptr,nivel_punteros);
                 } else {
                     //el bloque cuelga de otro bloque de puntero
                     buffer[indice] = ptr;
-                    fprintf(stderr,"traducir_bloque_inodo()->punteros_nivel%d[%d] = %d (reservado BF %d para punteros_nivel%d)\n",nivel_punteros+1,indice,ptr,ptr,nivel_punteros);
+                    //fprintf(stderr,"traducir_bloque_inodo()->punteros_nivel%d[%d] = %d (reservado BF %d para punteros_nivel%d)\n",nivel_punteros+1,indice,ptr,ptr,nivel_punteros);
                     if (bwrite(ptr_ant,buffer) < 0) return -1;
                 }
             }
@@ -472,10 +472,10 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, unsigned c
             inodo.ctime = time(NULL);
             if(!nRangoBL){
                 inodo.punterosDirectos[nblogico]=ptr;
-                fprintf(stderr,"traducir_bloque_inodo()->inodo.punterosDirectos[%d] = %d (reservado BF %d para BL %d)\n",nblogico,ptr,ptr,nblogico);
+                //fprintf(stderr,"traducir_bloque_inodo()->inodo.punterosDirectos[%d] = %d (reservado BF %d para BL %d)\n",nblogico,ptr,ptr,nblogico);
             } else {
                 buffer[indice] = ptr;
-                fprintf(stderr,"traducir_bloque_inodo()->punteros_nivel%d[%d] = %d (reservado BF %d para BL %d)\n",nivel_punteros+1,indice,ptr,ptr,nblogico);
+                //fprintf(stderr,"traducir_bloque_inodo()->punteros_nivel%d[%d] = %d (reservado BF %d para BL %d)\n",nivel_punteros+1,indice,ptr,ptr,nblogico);
                 if(bwrite(ptr_ant,buffer) < 0) return -1;
             }
         }
