@@ -20,13 +20,15 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
         strcpy(dst,camino+1);
 
         if (nBarras == 1) {
-            inicial = strtok(dst,s);
+            //inicial = strtok(dst,s);
+            strcpy(inicial,dst);
             *tipo = 'f';
-            final = "";
+            strcpy(final,"");
         } else {
             token = strchr(dst,'/');
             strcpy(final,token);
-            inicial = strtok(dst, s);
+            token = strtok(dst, s);
+            strcpy(inicial,token);
 
             if (final[0] == '/') {
                 *tipo = 'd';
@@ -34,6 +36,7 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
                 *tipo = 'f';
             }
         }
+        //printf("inicial %s final %s\n",inicial,final);
 
         return EXIT_SUCCESS;
     }
@@ -91,30 +94,34 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         int modulo = 1;
         int numPunteroDirecto = 0;
         memset(entradas,0,BLOCKSIZE);
-        mi_read_f(inodo_dir.punterosDirectos[numPunteroDirecto],entradas,offset,BLOCKSIZE);
+        mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
+        //mi_read_f(inodo_dir.punterosDirectos[numPunteroDirecto],entradas,offset,BLOCKSIZE);
         //while ((num_entrada_inodo < cant_entradas_inodo) && (inicial != entrada.nombre)) {
             //ojo que hi ha un 8 explícit
-        for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre) && numPunteroDirecto < 8;num_entrada_inodo++,modulo++) {
+        for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre) && numPunteroDirecto < 12;num_entrada_inodo++,modulo++) {
             
             modulo %= BLOCKSIZE/sizeof(struct entrada)+1;
             if (modulo == 0) {
                 offset += BLOCKSIZE;
                 numPunteroDirecto++;                
                 memset(entradas,0,BLOCKSIZE);
-                mi_read_f(inodo_dir.punterosDirectos[numPunteroDirecto],entradas,offset,BLOCKSIZE);
+                mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
+                //mi_read_f(inodo_dir.punterosDirectos[numPunteroDirecto],entradas,offset,BLOCKSIZE);
             }
         }
         int numPunteroInd = 0;
         offset += BLOCKSIZE;
         int moduloPuntero = 1;
         memset(punteros,0,BLOCKSIZE);
-        mi_read_f(inodo_dir.punterosIndirectos[numPunteroInd],punteros,offset,BLOCKSIZE);
-        for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre);num_entrada_inodo++,numPunteroInd++) {
+        mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
+        //mi_read_f(inodo_dir.punterosIndirectos[numPunteroInd],punteros,offset,BLOCKSIZE);
+        while ((num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre) && numPunteroInd < 3) {
             offset += BLOCKSIZE;
             int numPuntero = 0;
             modulo = 1;
             memset(entradas,0,BLOCKSIZE);
-            mi_read_f(punteros[numPuntero],entradas,offset,BLOCKSIZE);
+            mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
+            //mi_read_f(punteros[numPuntero],entradas,offset,BLOCKSIZE);
             for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre);num_entrada_inodo++,modulo++) {
                 
                 modulo %= BLOCKSIZE/sizeof(struct entrada)+1;
@@ -122,7 +129,8 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                     offset += BLOCKSIZE;
                     numPuntero++;
                     memset(entradas,0,BLOCKSIZE);
-                    mi_read_f(punteros[numPuntero],entradas,offset,BLOCKSIZE);
+                    mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
+                    //mi_read_f(punteros[numPuntero],entradas,offset,BLOCKSIZE);
                 }
             }
             moduloPuntero %= BLOCKSIZE/sizeof(unsigned int)+1;
@@ -130,12 +138,13 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                 offset += BLOCKSIZE;
                 numPunteroInd++;
                 memset(punteros,0,BLOCKSIZE);
-                mi_read_f(inodo_dir.punterosIndirectos[numPunteroInd],punteros,offset,BLOCKSIZE);
+                mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
+                //mi_read_f(inodo_dir.punterosIndirectos[numPunteroInd],punteros,offset,BLOCKSIZE);
             }
         }
     }
 
-    if (strcmp(inicial,entradas[num_entrada_inodo].nombre)) {
+    if (strcmp(inicial,entradas[num_entrada_inodo].nombre) ) {
         switch(reservar) {
             case 0: return ERROR_NO_EXISTE_ENTRADA_CONSULTA;
             case 1: 
@@ -156,33 +165,36 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                     } else {
                         entrada.ninodo = reservar_inodo('f',permisos);
                     }
-                    strcpy(entrada.nombre,entradas[num_entrada_inodo].nombre);
-                    entrada.ninodo = entradas[num_entrada_inodo].ninodo;
-                    fprintf(stderr,"buscar_entrada() -> Reservado inodo %d tipo %c con permisos %d para pruebas\n",entrada.ninodo,tipo,permisos);
-                    if ((mi_write_f(*p_inodo_dir,&entrada,num_entrada_inodo*sizeof(struct entrada),sizeof(struct entrada))) == -1) {
+                    fprintf(stderr,"buscar_entrada() -> Reservado inodo %d tipo %c con permisos %d para %s\n",entrada.ninodo,tipo,permisos,entrada.nombre);
+                    //strcpy(entrada.nombre,entradas[num_entrada_inodo].nombre);
+                    //entrada.ninodo = entradas[num_entrada_inodo].ninodo;
+                    if ((mi_write_f(*p_inodo_dir,&entrada,inodo_dir.tamEnBytesLog,sizeof(struct entrada))) == -1) {
                         if (entrada.ninodo != -1) {
                             liberar_inodo(entrada.ninodo);
                         }
                         return EXIT_FAILURE;
                     }
+                    fprintf(stderr,"buscar_entrada() -> Creada entrada: %s, %d\n",entrada.nombre,entrada.ninodo);
                 }
         }
     }
 
-    if (!strcmp(final,"")) {
+    if (!strcmp(final,"") || !strcmp(final,"/")) {
         if ((num_entrada_inodo < cant_entradas_inodo) && reservar == 1) {
             return ERROR_ENTRADA_YA_EXISTENTE;
         }
         //
-        *p_inodo = entrada.ninodo;
+        *p_inodo = entradas[num_entrada_inodo].ninodo;
         *p_entrada = num_entrada_inodo;
 
         return EXIT_SUCCESS;
     } else {
         //
-        *p_inodo_dir = entrada.ninodo;
+        *p_inodo_dir = entradas[num_entrada_inodo].ninodo;
+        //fprintf(stderr,"ha entrado\n");
 
         return buscar_entrada(final,p_inodo_dir,p_inodo,p_entrada,reservar,permisos);
     }
+    
     return EXIT_SUCCESS;
 }
