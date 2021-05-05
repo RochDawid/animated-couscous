@@ -11,20 +11,28 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
         char dst[80];
         char *token;
         const char s[2] = "/";
+        unsigned int nBarras = 1;
 
         strcpy(dst,camino+1);
+        for (int i=0;dst[i]!='\0';i++) {
+            if (dst[i] == '/') nBarras++;
+        }
+        strcpy(dst,camino+1);
 
-        token = strchr(dst,'/');
-        strcpy(final,token);
-
-        // comprovar quins mètodes són necessaris
-        inicial = strtok(dst, s);
-        //strcpy(inicial,token);
-
-        if (final[0] == '/') {
-            *tipo = 'd';
-        } else {
+        if (nBarras == 1) {
+            inicial = strtok(dst,s);
             *tipo = 'f';
+            final = "";
+        } else {
+            token = strchr(dst,'/');
+            strcpy(final,token);
+            inicial = strtok(dst, s);
+
+            if (final[0] == '/') {
+                *tipo = 'd';
+            } else {
+                *tipo = 'f';
+            }
         }
 
         return EXIT_SUCCESS;
