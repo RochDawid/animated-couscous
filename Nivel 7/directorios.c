@@ -132,9 +132,9 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
             mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
 
             for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre);num_entrada_inodo++,modulo++) {
-                modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas del bloque???
+                modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas tratadas del bloque
 
-                if (modulo == 0) { // si quedan entradas por tratar???
+                if (modulo == 0) { // si quedan entradas por tratar
                     offset += BLOCKSIZE;
                     numPuntero++;
                     memset(entradas,0,BLOCKSIZE);
