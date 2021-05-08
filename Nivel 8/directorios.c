@@ -214,7 +214,7 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
-    char reservar = 1;
+    char reservar = 0;
     unsigned char permisos = 1;
 
     if (buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos) == EXIT_SUCCESS) {
