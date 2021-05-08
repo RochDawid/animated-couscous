@@ -211,7 +211,31 @@ int mi_creat(const char *camino, unsigned char permisos) {
 }
 
 int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buffer, char tipo
-    
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+    char reservar = 1;
+    unsigned char permisos = 1;
+
+    if (buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos) == EXIT_SUCCESS) {
+        struct inodo *inodo;
+        struct tm *tm;
+
+        leer_inodo(p_inodo, &inodo); // leemos el inodo de la entrada
+
+        if (strcmp(inodo->tipo, "d") != 0) return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO; // no se trata de un directorio
+        if ((inodo.permisos & 4) != 4) return ERROR_PERMISO_LECTURA; // no tiene permisos de lectura
+
+        // incorporamos la información sobre los permisos
+        if (inodo.permisos & 4) strcat(buffer, "r"); else strcat(buffer, "-");
+        if (inodo.permisos & 2) strcat(buffer, "w"); else strcat(buffer, "-");
+        if (inodo.permisos & 1) strcat(buffer, "x"); else strcat(buffer, "-");
+
+        // incorporamos la información acerca del tiempo
+        tm = localtime(&inodo->mtime);
+        sprintf(tm, "%d-%02d-%02d %02d:%02d:%02d",tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,tm->tm_hour,tm->tm_min,tm->tm_sec);
+        strcat(buffer,tm);
+    }
 }
 
 int mi_chmod(const char *camino, unsigned char permisos) {
