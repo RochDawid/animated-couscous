@@ -3,6 +3,7 @@
     Antoni Payeras Munar
     Dawid Michal Roch Móll
 */
+
 #include "bloques.h"
 
 static int descriptor = 0;

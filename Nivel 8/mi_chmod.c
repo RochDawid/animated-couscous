@@ -3,6 +3,7 @@
     Antoni Payeras Munar
     Dawid Michal Roch Móll
 */
+
 #include "directorios.h"
 
 int main(int argc,char **argv) {
@@ -16,6 +17,6 @@ int main(int argc,char **argv) {
         mi_chmod(argv[3],permisos);
         return bumount();
     }
-    fprintf(stderr,"Error. Permisos inválidos\n");
+    fprintf(stderr,"Error: modo inválido >>%d>>\n", permisos);
     return -1;
 }

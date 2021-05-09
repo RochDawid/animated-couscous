@@ -3,11 +3,12 @@
     Antoni Payeras Munar
     Dawid Michal Roch Móll
 */
+
 #include "directorios.h"
 
 int main(int argc,char **argv) {
     if (argc != 4) {
-        fprintf(stderr,"Error. Sintaxis: ./mi_mkdir <disco> <permisos> </ruta>\n");
+        fprintf(stderr,"Sintaxis: ./mi_mkdir <disco> <permisos> </ruta>\n");
         return -1;
     }
     if (bmount(argv[1]) < 0) return -1;
@@ -21,6 +22,6 @@ int main(int argc,char **argv) {
         buscar_entrada(argv[3],&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos);
         return bumount();
     }
-    fprintf(stderr,"Error. Permisos inválidos\n");
+    fprintf(stderr,"Error: modo inválido: <<%d>>\n", permisos);
     return -1;
 }
