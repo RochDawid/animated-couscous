@@ -8,7 +8,7 @@
 
 int main(int argc,char **argv) {
     if (argc != 4) {
-        fprintf(stderr,"Error. Sintaxis: ./mi_chmod <disco> <permisos> </ruta>\n");
+        fprintf(stderr,"Sintaxis: ./mi_chmod <disco> <permisos> </ruta>\n");
         return -1;
     }
     if (bmount(argv[1]) < 0) return -1;
@@ -17,6 +17,6 @@ int main(int argc,char **argv) {
         mi_chmod(argv[3],permisos);
         return bumount();
     }
-    fprintf(stderr,"Error: modo inválido >>%d>>\n", permisos);
+    fprintf(stderr,"Error: modo inválido: <<%d>>\n", permisos);
     return -1;
 }

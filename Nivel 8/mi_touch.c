@@ -22,6 +22,6 @@ int main(int argc,char **argv) {
         buscar_entrada(argv[3],&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos);
         return bumount();
     }
-    fprintf(stderr,"Error: modo inválido >>%d>>\n", permisos);
+    fprintf(stderr,"Error: modo inválido: <<%d>>\n", permisos);
     return -1;
 }
