@@ -16,7 +16,7 @@
 #define ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO -7
 
 #define TAMFILA 100
-#define TAMBUFFER(TAMFILA*1000)//suponemos un máx de 1000 entradas, aunque debería ser SB.totInodos 
+#define TAMBUFFER (TAMFILA*1000)//suponemos un máx de 1000 entradas, aunque debería ser SB.totInodos 
 
 struct entrada {
     char nombre[TAMNOMBRE];
