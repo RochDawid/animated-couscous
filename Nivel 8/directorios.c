@@ -95,7 +95,8 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         *p_entrada = 0;
         return 0;
     }
-    if (extraer_camino(camino_parcial, inicial, final, &tipo) == 1) return ERROR_CAMINO_INCORRECTO;
+    
+    if (extraer_camino(camino_parcial, inicial, final, &tipo) == EXIT_FAILURE) return ERROR_CAMINO_INCORRECTO;
     fprintf(stderr,"buscar_entrada() -> inicial : %s, final : %s, reservar : %d\n",inicial,final,reservar);
     leer_inodo(*p_inodo_dir, &inodo_dir);
     if ((inodo_dir.permisos & 4) != 4) return ERROR_PERMISO_LECTURA;
@@ -109,7 +110,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         int numPunteroDirecto = 0;
         memset(entradas,0,BLOCKSIZE);
         mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
-        for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre) && numPunteroDirecto < 12;num_entrada_inodo++,modulo++) {
+        for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[modulo-1].nombre) && numPunteroDirecto < 12;num_entrada_inodo++,modulo++) {
             modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas del bloque???
 
             if (modulo == 0) { // si quedan entradas por tratar???
@@ -124,14 +125,14 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         int moduloPuntero = 1;
         memset(punteros,0,BLOCKSIZE);
         mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
-        while ((num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre) && numPunteroInd < 3) {
+        while ((num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[modulo-1].nombre) && numPunteroInd < 3) {
             offset += BLOCKSIZE;
             int numPuntero = 0;
             modulo = 1;
             memset(entradas,0,BLOCKSIZE);
             mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
 
-            for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre);num_entrada_inodo++,modulo++) {
+            for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[modulo-1].nombre);num_entrada_inodo++,modulo++) {
                 modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas tratadas del bloque
 
                 if (modulo == 0) { // si quedan entradas por tratar
@@ -152,7 +153,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         }
     }
 
-    if (strcmp(inicial,entradas[num_entrada_inodo].nombre) ) {
+    if (strcmp(inicial,entradas[num_entrada_inodo].nombre)) {
         switch(reservar) {
             case 0: return ERROR_NO_EXISTE_ENTRADA_CONSULTA;
             case 1: 
@@ -211,18 +212,18 @@ int mi_creat(const char *camino, unsigned char permisos) {
 }
 
 int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buffer, char tipo
+    unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
-    //unsigned int p_inodo = 0;
-    //unsigned int p_entrada = 0;
-    //char reservar = 0;
+    unsigned int p_entrada = 0;
+    char reservar = 0;
     struct entrada entradas[BLOCKSIZE/sizeof(struct entrada)];
     unsigned int punteros[BLOCKSIZE/sizeof(unsigned int)];
     struct inodo inodo;
 
-/*     //if (buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6) == EXIT_SUCCESS) {
-        struct inodo inodo;
+    if (buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6) == EXIT_SUCCESS) {
+        /* struct inodo inodo;
         struct tm *tm;
-        char *tmp;
+        char *tmp; */
 
         //podriamos usar un buffer de entradas
 
@@ -231,24 +232,7 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
         if (inodo.tipo != 'd') return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO; // no se trata de un directorio
         if ((inodo.permisos & 4) != 4) return ERROR_PERMISO_LECTURA; // no tiene permisos de lectura
 
-         // incorporamos la información sobre los permisos
-        if (inodo.permisos & 4) strcat(buffer, "r"); else strcat(buffer, "-");
-        if (inodo.permisos & 2) strcat(buffer, "w"); else strcat(buffer, "-");
-        if (inodo.permisos & 1) strcat(buffer, "x"); else strcat(buffer, "-");
-
-        // incorporamos la información acerca del tiempo
-        tm = localtime(&inodo.mtime);
-        sprintf(tmp, "%d-%02d-%02d %02d:%02d:%02d",tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,tm->tm_hour,tm->tm_min,tm->tm_sec);
-        strcat(buffer,tmp); */
-        //return inodo.tamEnBytesLog/sizeof(struct entrada);
-    //}
-    //return EXIT_FAILURE; */
-
-    leer_inodo(p_inodo, &inodo); // leemos el inodo de la entrada
-
-    if (inodo.tipo != 'd') return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO; // no se trata de un directorio
-    if ((inodo.permisos & 4) != 4) return ERROR_PERMISO_LECTURA; // no tiene permisos de lectura
-
+        // calcular cantidad de entradas que tiene el inodo
     int cant_entradas_inodo = inodo.tamEnBytesLog/sizeof(struct entrada);
     int num_entrada_inodo = 0;
     if (cant_entradas_inodo > 0) {
@@ -258,8 +242,8 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
         memset(entradas,0,BLOCKSIZE);
         mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
         for (;(num_entrada_inodo < cant_entradas_inodo) && numPunteroDirecto < 12;num_entrada_inodo++,modulo++) {
-            strcat(buffer,entradas[modulo].nombre);
-            strcat(buffer," | ");
+            strcat(buffer,entradas[modulo-1].nombre);
+            strcat(buffer,"\t");
             modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas del bloque???
 
             if (modulo == 0) { // si quedan entradas por tratar???
@@ -282,8 +266,8 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
             mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
 
             for (;(num_entrada_inodo < cant_entradas_inodo);num_entrada_inodo++,modulo++) {
-                strcat(buffer,entradas[modulo].nombre);
-                strcat(buffer," | ");
+                strcat(buffer,entradas[modulo-1].nombre);
+                strcat(buffer,"\t");
                 modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas tratadas del bloque
 
                 if (modulo == 0) { // si quedan entradas por tratar
@@ -303,7 +287,19 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
             }
         }
     }
-    return cant_entradas_inodo;
+
+         // incorporamos la información sobre los permisos
+/*        if (inodo.permisos & 4) strcat(buffer, "r"); else strcat(buffer, "-");
+        if (inodo.permisos & 2) strcat(buffer, "w"); else strcat(buffer, "-");
+        if (inodo.permisos & 1) strcat(buffer, "x"); else strcat(buffer, "-");
+
+        // incorporamos la información acerca del tiempo
+        tm = localtime(&inodo.mtime);
+        sprintf(tmp, "%d-%02d-%02d %02d:%02d:%02d",tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,tm->tm_hour,tm->tm_min,tm->tm_sec);
+        strcat(buffer,tmp); */
+        return num_entrada_inodo;
+    }
+    return EXIT_FAILURE;
 }
 
 int mi_chmod(const char *camino, unsigned char permisos) {
@@ -327,8 +323,8 @@ int mi_stat(const char *camino, struct STAT *p_stat) {
 
     if (buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6) == EXIT_SUCCESS) {
         mi_stat_f(p_inodo, p_stat);
-        fprintf(stderr,"mi_stat() -> nº inodo: %d\n",p_inodo);
-        return EXIT_SUCCESS;
+        
+        return p_inodo;
     }
     return EXIT_FAILURE;
 }
