@@ -14,12 +14,7 @@ int main(int argc,char **argv) {
     if (bmount(argv[1]) < 0) return -1;
     int permisos = atoi(argv[2]);
     if (permisos >= 0 && permisos <= 7) {
-        unsigned int p_inodo_dir = 0;
-        unsigned int p_inodo = 0;
-        unsigned int p_entrada = 0;
-        char reservar = 1;
-
-        buscar_entrada(argv[3],&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos);
+        mi_creat(argv[3],permisos);
         return bumount();
     }
     fprintf(stderr,"Error: modo inválido: <<%d>>\n", permisos);

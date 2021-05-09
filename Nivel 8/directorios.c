@@ -99,7 +99,10 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     if (extraer_camino(camino_parcial, inicial, final, &tipo) == EXIT_FAILURE) return ERROR_CAMINO_INCORRECTO;
     fprintf(stderr,"buscar_entrada() -> inicial : %s, final : %s, reservar : %d\n",inicial,final,reservar);
     leer_inodo(*p_inodo_dir, &inodo_dir);
-    if ((inodo_dir.permisos & 4) != 4) return ERROR_PERMISO_LECTURA;
+    if ((inodo_dir.permisos & 4) != 4) {
+        fprintf(stderr,"buscar_entrada() -> El inodo %d no tiene permisos de lectura\n",*p_inodo_dir);
+        return ERROR_PERMISO_LECTURA;
+    }
 
     // calcular cantidad de entradas que tiene el inodo
     cant_entradas_inodo = inodo_dir.tamEnBytesLog/sizeof(struct entrada);
@@ -207,8 +210,12 @@ int mi_creat(const char *camino, unsigned char permisos) {
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
     char reservar = 1;
+    int error;
 
-    return buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos);
+    if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos)) < 0) {
+        mostrar_error_buscar_entrada(error);
+    }
+    return 0;
 }
 
 int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buffer, char tipo
@@ -219,72 +226,75 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
     struct entrada entradas[BLOCKSIZE/sizeof(struct entrada)];
     unsigned int punteros[BLOCKSIZE/sizeof(unsigned int)];
     struct inodo inodo;
+    int error;
 
-    if (buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6) == EXIT_SUCCESS) {
-        //podriamos usar un buffer de entradas
-        leer_inodo(p_inodo, &inodo); // leemos el inodo de la entrada
+    if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
+        mostrar_error_buscar_entrada(error);
+        return EXIT_FAILURE;
+    }
 
-        if (inodo.tipo != 'd') return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO; // no se trata de un directorio
-        if ((inodo.permisos & 4) != 4) return ERROR_PERMISO_LECTURA; // no tiene permisos de lectura
+    leer_inodo(p_inodo, &inodo); // leemos el inodo de la entrada
 
-        // calcular cantidad de entradas que tiene el inodo
-        int cant_entradas_inodo = inodo.tamEnBytesLog/sizeof(struct entrada);
-        int num_entrada_inodo = 0;
-        if (cant_entradas_inodo > 0) {
-            int offset = 0;
-            int modulo = 1;
-            int numPunteroDirecto = 0;
+    if (inodo.tipo != 'd') return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO; // no se trata de un directorio
+    if ((inodo.permisos & 4) != 4) return ERROR_PERMISO_LECTURA; // no tiene permisos de lectura
+
+    // calcular cantidad de entradas que tiene el inodo
+    int cant_entradas_inodo = inodo.tamEnBytesLog/sizeof(struct entrada);
+    int num_entrada_inodo = 0;
+    if (cant_entradas_inodo > 0) {
+        int offset = 0;
+        int modulo = 1;
+        int numPunteroDirecto = 0;
+        memset(entradas,0,BLOCKSIZE);
+        mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
+        for (;(num_entrada_inodo < cant_entradas_inodo) && numPunteroDirecto < 12;num_entrada_inodo++,modulo++) {
+            strcat(buffer,entradas[modulo-1].nombre);
+            strcat(buffer,"\t");
+            modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas del bloque???
+
+            if (modulo == 0) { // si quedan entradas por tratar???
+                offset += BLOCKSIZE;
+                numPunteroDirecto++;
+                memset(entradas,0,BLOCKSIZE);
+                mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
+            }
+        }
+        int numPunteroInd = 0; // indice para localizar a qué puntero indirecto se apunta
+        offset += BLOCKSIZE;
+        int moduloPuntero = 1;
+        memset(punteros,0,BLOCKSIZE);
+        mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
+        while ((num_entrada_inodo < cant_entradas_inodo) && numPunteroInd < 3) {
+            offset += BLOCKSIZE;
+            int numPuntero = 0;
+            modulo = 1;
             memset(entradas,0,BLOCKSIZE);
             mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
-            for (;(num_entrada_inodo < cant_entradas_inodo) && numPunteroDirecto < 12;num_entrada_inodo++,modulo++) {
+
+            for (;(num_entrada_inodo < cant_entradas_inodo);num_entrada_inodo++,modulo++) {
                 strcat(buffer,entradas[modulo-1].nombre);
                 strcat(buffer,"\t");
-                modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas del bloque???
+                modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas tratadas del bloque
 
-                if (modulo == 0) { // si quedan entradas por tratar???
+                if (modulo == 0) { // si quedan entradas por tratar
                     offset += BLOCKSIZE;
-                    numPunteroDirecto++;
+                    numPuntero++;
                     memset(entradas,0,BLOCKSIZE);
                     mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
                 }
             }
-            int numPunteroInd = 0; // indice para localizar a qué puntero indirecto se apunta
-            offset += BLOCKSIZE;
-            int moduloPuntero = 1;
-            memset(punteros,0,BLOCKSIZE);
-            mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
-            while ((num_entrada_inodo < cant_entradas_inodo) && numPunteroInd < 3) {
+
+            moduloPuntero %= BLOCKSIZE/sizeof(unsigned int)+1;
+            if (moduloPuntero == 0) {
                 offset += BLOCKSIZE;
-                int numPuntero = 0;
-                modulo = 1;
-                memset(entradas,0,BLOCKSIZE);
+                numPunteroInd++;
+                memset(punteros,0,BLOCKSIZE);
                 mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
-
-                for (;(num_entrada_inodo < cant_entradas_inodo);num_entrada_inodo++,modulo++) {
-                    strcat(buffer,entradas[modulo-1].nombre);
-                    strcat(buffer,"\t");
-                    modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas tratadas del bloque
-
-                    if (modulo == 0) { // si quedan entradas por tratar
-                        offset += BLOCKSIZE;
-                        numPuntero++;
-                        memset(entradas,0,BLOCKSIZE);
-                        mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
-                    }
-                }
-
-                moduloPuntero %= BLOCKSIZE/sizeof(unsigned int)+1;
-                if (moduloPuntero == 0) {
-                    offset += BLOCKSIZE;
-                    numPunteroInd++;
-                    memset(punteros,0,BLOCKSIZE);
-                    mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
-                }
             }
         }
-        return num_entrada_inodo;
     }
-    return EXIT_FAILURE;
+
+    return num_entrada_inodo;
 }
 
 int mi_chmod(const char *camino, unsigned char permisos) {
@@ -292,12 +302,14 @@ int mi_chmod(const char *camino, unsigned char permisos) {
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
     char reservar = 0;
+    int error;
 
-    if (buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos) == EXIT_SUCCESS) {
-        mi_chmod_f(p_inodo, permisos);
-        return EXIT_SUCCESS;
+    if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos)) < 0) {
+        mostrar_error_buscar_entrada(error);
+        return EXIT_FAILURE;
     }
-    return EXIT_FAILURE;
+    mi_chmod_f(p_inodo, permisos);
+    return EXIT_SUCCESS;
 }
 
 int mi_stat(const char *camino, struct STAT *p_stat) {
@@ -305,11 +317,13 @@ int mi_stat(const char *camino, struct STAT *p_stat) {
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
     char reservar = 0;
+    int error;
 
-    if (buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6) == EXIT_SUCCESS) {
-        mi_stat_f(p_inodo, p_stat);
-        
-        return p_inodo;
+    if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
+        mostrar_error_buscar_entrada(error);
+        return EXIT_FAILURE;
     }
-    return EXIT_FAILURE;
+
+    mi_stat_f(p_inodo, p_stat);
+    return p_inodo;
 }

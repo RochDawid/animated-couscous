@@ -18,8 +18,11 @@ int main(int argc,char **argv) {
         unsigned int p_inodo = 0;
         unsigned int p_entrada = 0;
         char reservar = 1;
+        int error;
 
-        buscar_entrada(argv[3],&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos);
+        if ((error = buscar_entrada(argv[3],&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos)) < 0) {
+            mostrar_error_buscar_entrada(error);
+        }
         return bumount();
     }
     fprintf(stderr,"Error: modo inválido: <<%d>>\n", permisos);
