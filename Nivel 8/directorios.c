@@ -230,7 +230,7 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return -1;
     }
 
     leer_inodo(p_inodo, &inodo); // leemos el inodo de la entrada

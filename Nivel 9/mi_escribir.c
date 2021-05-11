@@ -3,7 +3,6 @@
     Antoni Payeras Munar
     Dawid Michal Roch Móll
 */
-//mi_escribir_varios.c
 //Programa para testear las cachés de directorios
 
 #include "directorios.h"
@@ -17,7 +16,6 @@ int main(int argc, char **argv){
     }
 
     //struct STAT stat;
-
     //montamos el dispositivo
     if (bmount(argv[1]) < 0) return -1;
     //obtenemos el texto y su longitud

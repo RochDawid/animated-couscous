@@ -230,7 +230,7 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return -1;
     }
 
     leer_inodo(p_inodo, &inodo); // leemos el inodo de la entrada
@@ -330,15 +330,31 @@ int mi_stat(const char *camino, struct STAT *p_stat) {
 
 int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned int nbytes){
     
-    //estik sek
-    //sermor need some help xd
-    
-    if (buscar_entrada() ) return -1;
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+    char reservar = 1;
+    int error;
 
-    int escritos = 0;
-    escritos = mi_write_f(p_inodo, buf, offset, nbytes);
-    return escritos;    
+    if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,2)) < 0) {
+        mostrar_error_buscar_entrada(error);
+        return EXIT_FAILURE;
+    }
+
+    return mi_write_f(p_inodo, buf, offset, nbytes);
 }
+
 int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nbytes){
 
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+    char reservar = 0;
+    int error;
+
+    if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,4)) < 0) {
+        mostrar_error_buscar_entrada(error);
+        return EXIT_FAILURE;
+    }
+    return mi_read_f(p_inodo, buf, offset, nbytes);
 }
