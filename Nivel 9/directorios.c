@@ -109,11 +109,11 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     // calcular cantidad de entradas que tiene el inodo
     cant_entradas_inodo = inodo_dir.tamEnBytesLog/sizeof(struct entrada);
     num_entrada_inodo = 0;
+    memset(entradas,0,BLOCKSIZE); // ponemos a 0 el buffer de lectura independientemente de la cantidad de entradas del inodo
     if (cant_entradas_inodo > 0) {
         int offset = 0;
         int modulo = 1;
         int numPunteroDirecto = 0;
-        memset(entradas,0,BLOCKSIZE);
         mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
         for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[modulo-1].nombre) && numPunteroDirecto < 12;num_entrada_inodo++,modulo++) {
             modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas del bloque???
@@ -121,7 +121,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
             if (modulo == 0) { // si quedan entradas por tratar???
                 offset += BLOCKSIZE;
                 numPunteroDirecto++;
-                memset(entradas,0,BLOCKSIZE);
+                memset(entradas,0,BLOCKSIZE); // reseteamos el buffer de lectura antes de hacer la siguiente lectura
                 mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
             }
         }
@@ -134,7 +134,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
             offset += BLOCKSIZE;
             int numPuntero = 0;
             modulo = 1;
-            memset(entradas,0,BLOCKSIZE);
+            memset(entradas,0,BLOCKSIZE); // antes de cada lectura limpiamos el buffer de lectura
             mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
 
             for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[modulo-1].nombre);num_entrada_inodo++,modulo++) {
@@ -143,7 +143,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                 if (modulo == 0) { // si quedan entradas por tratar
                     offset += BLOCKSIZE;
                     numPuntero++;
-                    memset(entradas,0,BLOCKSIZE);
+                    memset(entradas,0,BLOCKSIZE); // antes de cada lectura limpiamos el buffer de lectura
                     mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
                 }
             }
@@ -152,7 +152,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
             if (moduloPuntero == 0) {
                 offset += BLOCKSIZE;
                 numPunteroInd++;
-                memset(punteros,0,BLOCKSIZE);
+                memset(punteros,0,BLOCKSIZE); // reseteamos el buffer de punteros
                 mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
             }
         }
@@ -247,7 +247,6 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
         int offset = 0;
         int modulo = 1;
         int numPunteroDirecto = 0;
-        memset(entradas,0,BLOCKSIZE);
         mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
         for (;(num_entrada_inodo < cant_entradas_inodo) && numPunteroDirecto < 12;num_entrada_inodo++,modulo++) {
             strcat(buffer,entradas[modulo-1].nombre);
