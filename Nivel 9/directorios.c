@@ -356,11 +356,3 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
     }
     return mi_read_f(p_inodo, buf, offset, nbytes);
 }
-
-int mi_link(const char *camino1, const char *camino2) {
-
-}
-
-int mi_unlink(const char *camino) {
-    
-}

@@ -11,7 +11,7 @@
                     al archivo que se desee lo separa en dos trozos (inicial y final) y determina el
                     tipo de archivo del que se trata (fichero o directorio).
     input: const char *camino, char *inicial, char *final, char *tipo
-    output: 0 (success), 1 (failure)
+    output: 0 (success), -1 (failure)
     uses:
     used by: leer_sf.c
 */
@@ -74,7 +74,7 @@ void mostrar_error_buscar_entrada(int error) {
     input: const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada,
            char reservar, unsigned char permisos
     output: -
-    uses: 0 (success), 1 (failure)
+    uses: 0 (success), -1 (failure)
     used by: leer_sf.c
 */
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos) {
@@ -343,7 +343,6 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
 }
 
 int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nbytes){
-
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
@@ -355,4 +354,58 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
         return EXIT_FAILURE;
     }
     return mi_read_f(p_inodo, buf, offset, nbytes);
+}
+
+/*
+    buscar_entrada: crea el enlace de una entrada de directorio camino2 al inodo especificado
+                    por otra entrada de directorio camino1
+    input: const char *camino1, const char *camino2
+    output: -
+    uses: 0 (success), -1 (failure)
+    used by: mi_link.c
+*/
+int mi_link(const char *camino1, const char *camino2) {
+    unsigned int p_inodo_dir1, p_inodo_dir2 = 0;
+    unsigned int p_inodo1, p_inodo2 = 0;
+    unsigned int p_entrada1, p_entrada2 = 0;
+    char reservar = 0;
+    int error;
+    struct inodo *inodo1, *inodo2;
+
+    // comprobamos que la entrada camino1 existe
+    if ((error = buscar_entrada(camino1, &p_inodo_dir1, &p_inodo1, &p_entrada1, reservar, 6)) < 0) {
+        mostrar_error_buscar_entrada(error);
+        return EXIT_FAILURE;
+    }
+
+    leer_inodo(p_inodo1, inodo1); // leemos el inodo de la entrada
+
+    // comprobamos que tiene permisos de lectura (comprovar si no se fa ja a la línia 377???)
+    if ((inodo1->permisos & 4) != 4) {
+        fprintf(stderr,"El inodo %d no tiene permisos de lectura\n",inodo1);
+        return EXIT_FAILURE;
+    }
+
+    // si no existe la entrada camino2
+    if ((error = buscar_entrada(camino2, &p_inodo_dir2, &p_inodo2, &p_entrada2, reservar, 6)) == ERROR_NO_EXISTE_ENTRADA_CONSULTA) {
+        reservar = 1;
+        // la creamos con permisos 6 mediante buscar_entrada()
+        if ((error = buscar_entrada(camino1, &p_inodo_dir2, &p_inodo2, &p_entrada2, reservar, 6)) < 0) {
+            mostrar_error_buscar_entrada(error);
+            return EXIT_FAILURE;
+        }
+
+        p_inodo2 = p_inodo1; // hacemos el enlace asignándole el inodo de la primera entrada a la segunda
+        // escribimos la entrada modificada en p_inodo_dir2 FALTA FER-HO
+        inodo1->nlinks++; // incrementamos la cantidad de enlaces de p_inodo1
+        inodo1->ctime = time(NULL); // actualizamos el ctime
+        // salvamos el inodo FALTA FER-HO
+    } else {
+        mostrar_error_buscar_entrada(error);
+        return EXIT_FAILURE;
+    }
+}
+
+int mi_unlink(const char *camino) {
+    
 }
