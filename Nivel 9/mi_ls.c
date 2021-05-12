@@ -19,6 +19,5 @@ int main(int argc,char **argv) {
     fprintf(stderr,"nº entradas : %d\n",numEntradas);
     fprintf(stderr,"Contenido buffer : \n %s\n",buffer);
     return bumount();
-    fprintf(stderr,"Error: permisos inválidos\n");
     return -1;
 }

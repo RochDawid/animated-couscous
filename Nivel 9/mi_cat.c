@@ -11,7 +11,7 @@ int main(int argc,char **argv) {
         fprintf(stderr, "Sintaxis: ./leer <disco> </ruta_fichero> \n");
         exit(-1);
     }
-    int offset = 0, leidos = 0, contadorLeidos = 0, tambuffer = 1500;
+    int offset = 0, leidos = 0, contadorLeidos = 0, tambuffer = BLOCKSIZE*4; //PROBAR tambuffer=1500
     char buffer[tambuffer];
 
     //struct STAT stat;
@@ -29,14 +29,15 @@ int main(int argc,char **argv) {
     memset(buffer,0,tambuffer);
     leidos = mi_read(camino,buffer,offset,tambuffer);
     if (leidos == -1) return -1;
-    contadorLeidos = leidos;
+    
 
     while (leidos > 0) {
+        contadorLeidos += leidos;
         offset += tambuffer;
-        leidos += mi_read(camino, buffer, offset, tambuffer);
-        memset(buffer,0,tambuffer);        
+        memset(buffer,0,tambuffer);
+        leidos = mi_read(camino, buffer, offset, tambuffer);        
     }
-    fprintf(stderr, "Bytes leidos: %d\n", leidos);
+    fprintf(stderr, "Bytes leidos: %d\n", contadorLeidos);
     /* Visualización del stat
     mi_stat_f(ninodo, &stat);
     printf("stat.tamEnBytesLog=%d\n",stat.tamEnBytesLog);

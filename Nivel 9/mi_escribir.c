@@ -20,7 +20,9 @@ int main(int argc, char **argv){
     if (bmount(argv[1]) < 0) return -1;
     //obtenemos el texto y su longitud
     char *buffer_texto = argv[3];
-    int longitud = strlen(buffer_texto);
+    //char buffer[BLOCKSIZE];
+    int length = strlen(buffer_texto);
+    //int i = 0;
 
     //obtenemos la ruta y comprobamos que no se refiera a un directorio
     if (argv[2][strlen(argv[2]) - 1] == '/'){
@@ -31,9 +33,12 @@ int main(int argc, char **argv){
     //obtenemos el offset
     unsigned int offset = atoi(argv[4]);
     int escritos = 0;
-    fprintf(stderr, "longitud texto: %d\n", longitud);
-    // escribimos varias veces el texto desplazado 1 bloque
-    escritos = mi_write(camino, buffer_texto, offset + BLOCKSIZE * i, longitud);
+    //int varios = 10;
+    fprintf(stderr, "longitud texto: %d\n", length);
+    //for (int i = 0;i < varios;i++) {
+        // escribimos varias veces el texto desplazado 1 bloque
+        escritos = mi_write(camino, buffer_texto, offset, length);
+    //}
 
     fprintf(stderr, "Bytes escritos: %d\n", escritos);
     /* Visualización del stat

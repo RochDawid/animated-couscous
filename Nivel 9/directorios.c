@@ -47,7 +47,7 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
         }
         return EXIT_SUCCESS;
     }
-    return EXIT_FAILURE;
+    return -1;
 }
 
 /*
@@ -104,6 +104,8 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         return ERROR_PERMISO_LECTURA;
     }
 
+    //inicializar buffer 
+    //memset(entradas,0,BLOCKSIZE);
     // calcular cantidad de entradas que tiene el inodo
     cant_entradas_inodo = inodo_dir.tamEnBytesLog/sizeof(struct entrada);
     num_entrada_inodo = 0;
@@ -182,7 +184,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                         if (entrada.ninodo != -1) { // si la escritura da error
                             liberar_inodo(entrada.ninodo); // liberamos el inodo
                         }
-                        return EXIT_FAILURE;
+                        return -1;
                     }
                     fprintf(stderr,"buscar_entrada() -> Creada entrada: %s, %d\n",entrada.nombre,entrada.ninodo);
                 }
@@ -306,7 +308,7 @@ int mi_chmod(const char *camino, unsigned char permisos) {
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return -1;
     }
     mi_chmod_f(p_inodo, permisos);
     return EXIT_SUCCESS;
@@ -321,7 +323,7 @@ int mi_stat(const char *camino, struct STAT *p_stat) {
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return -1;
     }
 
     mi_stat_f(p_inodo, p_stat);
@@ -329,16 +331,15 @@ int mi_stat(const char *camino, struct STAT *p_stat) {
 }
 
 int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned int nbytes){
-    
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
-    char reservar = 1;
+    char reservar = 0;
     int error;
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,2)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return 0;
     }
 
     return mi_write_f(p_inodo, buf, offset, nbytes);
@@ -354,7 +355,7 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,4)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return 0;
     }
     return mi_read_f(p_inodo, buf, offset, nbytes);
 }
