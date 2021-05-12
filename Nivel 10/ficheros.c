@@ -55,7 +55,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
             
         return bytesEscritos;
     } else {
-        perror("Error: no dispone de permisos para leer el fichero/directorio.");
+        perror("Error: no hay permisos de escritura\n");
         return -1;
     }
 }

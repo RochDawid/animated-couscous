@@ -47,7 +47,7 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo) {
         }
         return EXIT_SUCCESS;
     }
-    return EXIT_FAILURE;
+    return -1;
 }
 
 /*
@@ -182,7 +182,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                         if (entrada.ninodo != -1) { // si la escritura da error
                             liberar_inodo(entrada.ninodo); // liberamos el inodo
                         }
-                        return EXIT_FAILURE;
+                        return -1;
                     }
                     fprintf(stderr,"buscar_entrada() -> Creada entrada: %s, %d\n",entrada.nombre,entrada.ninodo);
                 }
@@ -305,7 +305,7 @@ int mi_chmod(const char *camino, unsigned char permisos) {
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return -1;
     }
     mi_chmod_f(p_inodo, permisos);
     return EXIT_SUCCESS;
@@ -320,7 +320,7 @@ int mi_stat(const char *camino, struct STAT *p_stat) {
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return -1;
     }
 
     mi_stat_f(p_inodo, p_stat);
@@ -336,7 +336,7 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,2)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return 0;
     }
 
     return mi_write_f(p_inodo, buf, offset, nbytes);
@@ -351,7 +351,7 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,4)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return 0;
     }
     return mi_read_f(p_inodo, buf, offset, nbytes);
 }
@@ -375,15 +375,15 @@ int mi_link(const char *camino1, const char *camino2) {
     // comprobamos que la entrada camino1 existe
     if ((error = buscar_entrada(camino1, &p_inodo_dir1, &p_inodo1, &p_entrada1, reservar, 6)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return -1;
     }
 
     leer_inodo(p_inodo1, inodo1); // leemos el inodo de la entrada
 
-    // comprobamos que tiene permisos de lectura (comprovar si no se fa ja a la línia 377???)
+    // comprobamos que tiene permisos de lectura
     if ((inodo1->permisos & 4) != 4) {
-        fprintf(stderr,"El inodo %d no tiene permisos de lectura\n",inodo1);
-        return EXIT_FAILURE;
+        fprintf(stderr,"El inodo %d no tiene permisos de lectura\n",p_inodo1);
+        return -1;
     }
 
     // si no existe la entrada camino2
@@ -392,17 +392,17 @@ int mi_link(const char *camino1, const char *camino2) {
         // la creamos con permisos 6 mediante buscar_entrada()
         if ((error = buscar_entrada(camino1, &p_inodo_dir2, &p_inodo2, &p_entrada2, reservar, 6)) < 0) {
             mostrar_error_buscar_entrada(error);
-            return EXIT_FAILURE;
+            return -1;
         }
 
         p_inodo2 = p_inodo1; // hacemos el enlace asignándole el inodo de la primera entrada a la segunda
         // escribimos la entrada modificada en p_inodo_dir2 FALTA FER-HO
         inodo1->nlinks++; // incrementamos la cantidad de enlaces de p_inodo1
         inodo1->ctime = time(NULL); // actualizamos el ctime
-        // salvamos el inodo FALTA FER-HO
+        escribir_inodo(p_inodo1, inodo1); // salvamos el inodo
     } else {
         mostrar_error_buscar_entrada(error);
-        return EXIT_FAILURE;
+        return -1;
     }
 }
 
