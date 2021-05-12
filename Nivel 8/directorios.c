@@ -107,11 +107,11 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     // calcular cantidad de entradas que tiene el inodo
     cant_entradas_inodo = inodo_dir.tamEnBytesLog/sizeof(struct entrada);
     num_entrada_inodo = 0;
+    memset(entradas,0,BLOCKSIZE); // ponemos a 0 el buffer de lectura independientemente de la cantidad de entradas del inodo
     if (cant_entradas_inodo > 0) {
         int offset = 0;
         int modulo = 1;
         int numPunteroDirecto = 0;
-        memset(entradas,0,BLOCKSIZE);
         mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
         for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[modulo-1].nombre) && numPunteroDirecto < 12;num_entrada_inodo++,modulo++) {
             modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas del bloque???
@@ -123,7 +123,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
                 mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
             }
         }
-        int numPunteroInd = 0; // indice para localizar a qué puntero indirecto se apunta
+        int numPunteroInd = 0; // índice para localizar a qué puntero indirecto se apunta
         offset += BLOCKSIZE;
         int moduloPuntero = 1;
         memset(punteros,0,BLOCKSIZE);

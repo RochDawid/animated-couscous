@@ -33,7 +33,7 @@ int main(int argc, char **argv){
     int escritos = 0;
     fprintf(stderr, "longitud texto: %d\n", longitud);
     // escribimos varias veces el texto desplazado 1 bloque
-    escritos = mi_write(camino, buffer_texto, offset + BLOCKSIZE * i, longitud);
+    escritos = mi_write(camino, buffer_texto, offset + BLOCKSIZE, longitud);
 
     fprintf(stderr, "Bytes escritos: %d\n", escritos);
     /* Visualización del stat
