@@ -84,7 +84,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     char final[strlen(camino_parcial)];
     char tipo;
     int cant_entradas_inodo, num_entrada_inodo;
-    unsigned int punteros[BLOCKSIZE/sizeof(unsigned int)];
     struct entrada entradas[BLOCKSIZE/sizeof(struct entrada)];
 
     if (!strcmp(camino_parcial,"/")) {
@@ -103,56 +102,23 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     // calcular cantidad de entradas que tiene el inodo
     cant_entradas_inodo = inodo_dir.tamEnBytesLog/sizeof(struct entrada);
     num_entrada_inodo = 0;
+    int indice = 0;
+    memset(entradas,0,BLOCKSIZE); // ponemos a 0 el buffer de lectura independientemente de la cantidad de entradas del inodo
     if (cant_entradas_inodo > 0) {
         int offset = 0;
-        int modulo = 1;
-        int numPunteroDirecto = 0;
-        memset(entradas,0,BLOCKSIZE);
         mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
-        for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre) && numPunteroDirecto < 12;num_entrada_inodo++,modulo++) {
-            modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas del bloque???
-
-            if (modulo == 0) { // si quedan entradas por tratar???
+        while (num_entrada_inodo < cant_entradas_inodo && strcmp(inicial,entradas[indice].nombre)) {
+            for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[indice].nombre) && indice < BLOCKSIZE/sizeof(struct entrada);num_entrada_inodo++,indice++) {}
+            if (indice == BLOCKSIZE/sizeof(struct entrada)) {
+                indice = 0;
                 offset += BLOCKSIZE;
-                numPunteroDirecto++;
                 memset(entradas,0,BLOCKSIZE);
                 mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
-            }
-        }
-        int numPunteroInd = 0; // indice para localizar a qué puntero indirecto se apunta
-        offset += BLOCKSIZE;
-        int moduloPuntero = 1;
-        memset(punteros,0,BLOCKSIZE);
-        mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
-        while ((num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre) && numPunteroInd < 3) {
-            offset += BLOCKSIZE;
-            int numPuntero = 0;
-            modulo = 1;
-            memset(entradas,0,BLOCKSIZE);
-            mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
-
-            for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[num_entrada_inodo].nombre);num_entrada_inodo++,modulo++) {
-                modulo %= BLOCKSIZE/sizeof(struct entrada)+1; // calculamos el número de entradas tratadas del bloque
-
-                if (modulo == 0) { // si quedan entradas por tratar
-                    offset += BLOCKSIZE;
-                    numPuntero++;
-                    memset(entradas,0,BLOCKSIZE);
-                    mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
-                }
-            }
-
-            moduloPuntero %= BLOCKSIZE/sizeof(unsigned int)+1;
-            if (moduloPuntero == 0) {
-                offset += BLOCKSIZE;
-                numPunteroInd++;
-                memset(punteros,0,BLOCKSIZE);
-                mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
-            }
+            } 
         }
     }
 
-    if (strcmp(inicial,entradas[num_entrada_inodo].nombre) ) {
+    if (strcmp(inicial,entradas[indice].nombre) ) {
         switch(reservar) {
             case 0: return ERROR_NO_EXISTE_ENTRADA_CONSULTA;
             case 1: 
@@ -189,12 +155,12 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         if ((num_entrada_inodo < cant_entradas_inodo) && reservar == 1) {
             return ERROR_ENTRADA_YA_EXISTENTE;
         }
-        *p_inodo = entradas[num_entrada_inodo].ninodo;
+        *p_inodo = entradas[indice].ninodo;
         *p_entrada = num_entrada_inodo;
 
         return EXIT_SUCCESS;
     } else {
-        *p_inodo_dir = entradas[num_entrada_inodo].ninodo;
+        *p_inodo_dir = entradas[indice].ninodo;
 
         return buscar_entrada(final,p_inodo_dir,p_inodo,p_entrada,reservar,permisos);
     }

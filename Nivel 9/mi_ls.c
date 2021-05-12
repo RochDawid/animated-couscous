@@ -16,8 +16,7 @@ int main(int argc,char **argv) {
     memset(buffer,0,TAMBUFFER);
     int numEntradas = mi_dir(argv[2],buffer);
     if (numEntradas == -1) return -1;
-    fprintf(stderr,"nº entradas : %d\n",numEntradas);
-    fprintf(stderr,"Contenido buffer : \n %s\n",buffer);
+    fprintf(stderr,"Total: %d\n",numEntradas);
+    fprintf(stderr,"Contenido buffer: %s\n",buffer);
     return bumount();
-    return -1;
 }

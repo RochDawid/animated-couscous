@@ -23,7 +23,7 @@ int main(int argc,char **argv) {
     if (argv[1]) {
         if (bmount(argv[1]) < 0) return -1;
         struct superbloque sb;
-    
+            
         if (bread(posSB,&sb) < 0) return -1;
         printf("\nDATOS DEL SUPERBLOQUE\n");
         printf("posPrimerBloqueMB = %d\n",sb.posPrimerBloqueMB);

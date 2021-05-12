@@ -8,7 +8,6 @@
 #include "directorios.h"
 
 int main(int argc, char **argv){
-
     //Comprobamos sintaxis
     if (argc != 5){
         fprintf(stderr, "Sintaxis: ./mi_escribir <disco> </ruta_fichero> <texto> <offset>\n");
@@ -33,8 +32,10 @@ int main(int argc, char **argv){
     int escritos = 0;
     fprintf(stderr, "longitud texto: %d\n", longitud);
     // escribimos varias veces el texto desplazado 1 bloque
-    escritos = mi_write(camino, buffer_texto, offset + BLOCKSIZE, longitud);
-
+    escritos = mi_write(camino, buffer_texto, offset, longitud);
+    if (escritos == -1) {
+        escritos = 0;
+    }
     fprintf(stderr, "Bytes escritos: %d\n", escritos);
     /* Visualización del stat
     mi_stat_f(ninodo, &stat);
