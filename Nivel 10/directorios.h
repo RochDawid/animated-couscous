@@ -6,7 +6,7 @@
 
 #include "ficheros.h"
 
-#define TAMNOMBRE 60 //tamaño del nombre de directorio o fichero, en ext2 = 256
+#define TAMNOMBRE 60 // tamaño del nombre de directorio o fichero, en ext2 = 256
 #define ERROR_CAMINO_INCORRECTO -1
 #define ERROR_PERMISO_LECTURA -2
 #define ERROR_NO_EXISTE_ENTRADA_CONSULTA -3
@@ -16,7 +16,7 @@
 #define ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO -7
 
 #define TAMFILA 100
-#define TAMBUFFER (TAMFILA*1000)//suponemos un máx de 1000 entradas, aunque debería ser SB.totInodos 
+#define TAMBUFFER (TAMFILA*1000) // suponemos un máx de 1000 entradas, aunque debería ser SB.totInodos 
 
 struct entrada {
     char nombre[TAMNOMBRE];
