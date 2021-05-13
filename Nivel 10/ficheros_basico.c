@@ -535,7 +535,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo) {
     } else {
         ultimoBL = inodo-> tamEnBytesLog / BLOCKSIZE;
     }
-    fprintf(stderr,"liberar_bloques_inodo()->primerBL: %d, último: %d\n",primerBL,ultimoBL);
+    //fprintf(stderr,"liberar_bloques_inodo()->primerBL: %d, último: %d\n",primerBL,ultimoBL);
     memset(bufAux_punteros, 0, BLOCKSIZE);
     ptr = 0;
     for (nBL=primerBL;nBL <= ultimoBL; nBL++){
@@ -557,7 +557,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo) {
         }
 
         if (ptr > 0) {
-            fprintf(stderr,"liberar_bloques_inodo()-> liberado BF %d de datos para BL %d\n",ptr,nBL);
+            //fprintf(stderr,"liberar_bloques_inodo()-> liberado BF %d de datos para BL %d\n",ptr,nBL);
             if (liberar_bloque(ptr) < 0) return -1;
             liberados++;
             if (nRangoBL == 0) {
@@ -569,7 +569,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo) {
                     bloques_punteros[nivel_punteros-1][indice] = 0;
                     ptr = ptr_nivel[nivel_punteros-1];
                     if (memcmp(bloques_punteros[nivel_punteros-1], bufAux_punteros, BLOCKSIZE) == 0) {
-                        fprintf(stderr,"liberar_bloques_inodo()-> liberado BF %d de punteros_nivel%d correspondiente al BL %d\n",ptr,nivel_punteros,nBL);
+                        //fprintf(stderr,"liberar_bloques_inodo()-> liberado BF %d de punteros_nivel%d correspondiente al BL %d\n",ptr,nivel_punteros,nBL);
                         if (liberar_bloque(ptr) < 0) return -1;
                         liberados++;
                         if (nivel_punteros == nRangoBL) {
@@ -584,6 +584,6 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo) {
             }
         }
     }
-    fprintf(stderr,"liberar_bloques_inodo()->total bloques liberados: %d\n",liberados);
+    //fprintf(stderr,"liberar_bloques_inodo()->total bloques liberados: %d\n",liberados);
     return liberados;
 }

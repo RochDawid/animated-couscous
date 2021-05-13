@@ -34,8 +34,8 @@ int main(int argc,char **argv) {
         write(1,buffer,leidos);
         contadorLeidos += leidos;
         offset += tambuffer;
-        leidos += mi_read(camino, buffer, offset, tambuffer);
-        memset(buffer,0,tambuffer);        
+        memset(buffer,0,tambuffer);   
+        leidos = mi_read(camino, buffer, offset, tambuffer);     
     }
     sprintf(string,"\nbytes leidos : %d\n",contadorLeidos);
     write(2,string,strlen(string));
