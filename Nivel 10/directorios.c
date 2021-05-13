@@ -340,6 +340,47 @@ int mi_link(const char *camino1, const char *camino2) {
     }
 }
 
-/* int mi_unlink(const char *camino) {
-    
-} */
+int mi_unlink(const char *camino) {
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+    char reservar = 0;
+    int error;
+    struct inodo inodo, inodo_dir;
+
+    // comprobamos que la entrada camino1 existe
+    if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, reservar, 6)) < 0) {
+        mostrar_error_buscar_entrada(error);
+        return -1;
+    }
+
+    leer_inodo(p_inodo, &inodo);
+
+    if (inodo.tipo == 'd' && inodo.tamEnBytesLog > 0) {
+        fprintf(stderr,"Error: El directorio %s no está vacío\n",camino);
+        return -1;
+    } 
+
+    leer_inodo(p_inodo_dir, &inodo_dir);
+    int nEntradas = inodo_dir.tamEnBytesLog/sizeof(struct entrada);
+    if (p_entrada != nEntradas-1) {
+        struct entrada entrada;
+        mi_read_f(p_inodo_dir,&entrada,inodo_dir.tamEnBytesLog-sizeof(struct entrada),sizeof(struct entrada));
+        mi_write_f(p_inodo_dir,&entrada,sizeof(struct entrada)*p_entrada,sizeof(struct entrada));
+    }
+    mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog-sizeof(struct entrada));
+
+    leer_inodo(p_inodo, &inodo);
+    fprintf(stderr,"nlinks : %d\n",inodo.nlinks);
+    inodo.nlinks--;
+    if (inodo.nlinks == 0) {
+        liberar_inodo(p_inodo);
+
+        return 1;
+    } else {
+        time_t timer;
+        inodo.ctime = time(&timer); // actualizamos el ctime
+        escribir_inodo(p_inodo,inodo);
+        return 0;
+    }
+}

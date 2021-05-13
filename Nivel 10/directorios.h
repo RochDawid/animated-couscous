@@ -33,4 +33,4 @@ int mi_stat(const char *camino, struct STAT *p_stat);
 int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nbytes);
 int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned int nbytes);
 int mi_link(const char *camino1, const char *camino2);
-//int mi_unlink(const char *camino);
+int mi_unlink(const char *camino);

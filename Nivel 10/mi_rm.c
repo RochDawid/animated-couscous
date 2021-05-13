@@ -19,6 +19,9 @@ int main(int argc,char **argv) {
         exit(-1);
     } */
     
-    mi_unlink(argv[2]);
+    int liberados = mi_unlink(argv[2]);
+    if (liberados != -1) {
+        fprintf(stderr,"liberados: %d\n",liberados);
+    }
     return bumount();
 }
