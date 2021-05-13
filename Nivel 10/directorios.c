@@ -300,14 +300,9 @@ int mi_link(const char *camino1, const char *camino2) {
     unsigned int p_inodo_dir1 = 0, p_inodo_dir2 = 0;
     unsigned int p_inodo1 = 0, p_inodo2 = 0;
     unsigned int p_entrada1 = 0, p_entrada2 = 0;
-    char reservar = 1;
+    char reservar = 0;
     int error;
     struct inodo inodo1;
-
-    /* if () {
-        fprintf(stderr,"El inodo %d no tiene permisos de lectura\n",p_inodo1);
-        return -1;
-    } */
 
     // comprobamos que la entrada camino1 existe
     if ((error = buscar_entrada(camino1, &p_inodo_dir1, &p_inodo1, &p_entrada1, reservar, 6)) != ERROR_ENTRADA_YA_EXISTENTE) {
@@ -323,24 +318,18 @@ int mi_link(const char *camino1, const char *camino2) {
         return -1;
     }
 
-    //reservar = 1;
+    reservar = 1;
     // si no existe la entrada camino2
     if ((error = buscar_entrada(camino2, &p_inodo_dir2, &p_inodo2, &p_entrada2, reservar, 6)) != ERROR_ENTRADA_YA_EXISTENTE) {
-        //reservar = 1;
-        // la creamos con permisos 6 mediante buscar_entrada()
-        /* if ((error = buscar_entrada(camino1, &p_inodo_dir2, &p_inodo2, &p_entrada2, reservar, 6)) < 0) {
-            mostrar_error_buscar_entrada(error);
-            return -1;
-        } */
         struct entrada entrada;
         int leidos = mi_read_f(p_inodo_dir2,&entrada,sizeof(struct entrada)*p_entrada2,sizeof(struct entrada));
         fprintf(stderr,"nombre: %s, nentrada %d\n",entrada.nombre,p_entrada2);
         entrada.ninodo = p_inodo1; // hacemos el enlace asignándole el inodo de la primera entrada a la segunda
         fprintf(stderr,"nodo: %d\n",entrada.ninodo);
+        // escribimos la entrada modificada en p_inodo_dir2
         int escritos = mi_write_f(p_inodo_dir2,&entrada,sizeof(struct entrada)*p_entrada2,sizeof(struct entrada));
         fprintf(stderr,"leidos %d, escritos %d\n",leidos, escritos);
-        liberar_inodo(p_inodo_dir2);
-        // escribimos la entrada modificada en p_inodo_dir2 FALTA FER-HO
+        liberar_inodo(p_inodo2);
         inodo1.nlinks++; // incrementamos la cantidad de enlaces de p_inodo1
         time_t timer;
         inodo1.ctime = time(&timer); // actualizamos el ctime

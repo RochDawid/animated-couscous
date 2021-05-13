@@ -13,7 +13,7 @@ int main(int argc,char **argv) {
     }
     if (bmount(argv[1]) < 0) return -1;
 
-    //obtenemos la ruta y comprobamos que no se refiera a un directorio
+    // obtenemos la ruta y comprobamos que no se refiera a un directorio
     if ((argv[2][strlen(argv[2]) - 1] == '/') || (argv[3][strlen(argv[3]) - 1] == '/')){
         fprintf(stderr, "Error: la ruta se corresponde a un directorio");
         exit(-1);
