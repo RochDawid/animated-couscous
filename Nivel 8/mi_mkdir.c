@@ -14,7 +14,7 @@ int main(int argc,char **argv) {
     if (bmount(argv[1]) < 0) return -1;
     int permisos = atoi(argv[2]);
     if (argv[3][strlen(argv[3]) - 1] != '/'){
-        fprintf(stderr, "Error: la ruta se corresponde a un directorio");
+        fprintf(stderr, "Error: la ruta se corresponde a un fichero");
         return -1;
     }
     if (permisos >= 0 && permisos <= 7) {

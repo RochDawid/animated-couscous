@@ -12,6 +12,10 @@ int main(int argc,char **argv) {
         return -1;
     }
     if (bmount(argv[1]) < 0) return -1;
+    if (argv[3][strlen(argv[3]) - 1] == '/'){
+        fprintf(stderr, "Error: la ruta se corresponde a un directorio");
+        return -1;
+    }
     int permisos = atoi(argv[2]);
     if (permisos >= 0 && permisos <= 7) {
         mi_creat(argv[3],permisos);
