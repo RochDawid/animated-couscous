@@ -48,7 +48,7 @@ int main(int argc,char **argv) {
         leer_inodo(entrada.ninodo,&inodo);
 
         ts = localtime(&inodo.mtime);
-        strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+        strftime(mtime, sizeof(mtime), "%Y-%m-%d %H:%M:%S", ts);
 
         if ((inodo.permisos & 6) == 6) {
             strcpy(permisos,"rw-");
