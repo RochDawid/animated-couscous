@@ -33,38 +33,32 @@ int main(int argc,char **argv) {
         return -1;
     }
 
-    leer_inodo(p_inodo, &inodo); // leemos el inodo de la entrada
-    
-    if ((inodo.permisos & 6) == 6){
-        strcpy(permisos,"rw-");
-    } else if ((inodo.permisos & 4) == 4) {
-        strcpy(permisos,"r--");
-    } else if ((inodo.permisos & 2) == 2) {
-        strcpy(permisos,"w--");
-    } else {
-        strcpy(permisos, "---");
-    }
-
-
     memset(buffer,0,TAMBUFFER);
     int numEntradas = mi_dir(argv[2],buffer);
     if (numEntradas == -1) return -1;
 
-    ts = localtime(&inodo.mtime);
-    strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
-
     fprintf(stderr,"Total: %d\n",numEntradas);
-    fprintf(stderr,"Tipo    Permisos    mTime                       Tamaño  Nombre\n");
-    fprintf(stderr,"--------------------------------------------------------------\n");
+    fprintf(stderr,"Tipo    Permisos    mTime                       Tamaño      Nombre        \n");
+    fprintf(stderr,"--------------------------------------------------------------------------\n");
 
-    int j = 0;
     for (int i=0;i<numEntradas;i++) {
-        fprintf(stderr,"%c       %s         %s     %d      ", inodo.tipo,permisos, mtime, inodo.tamEnBytesLog);
-        if (buffer[j] == '\t') j++;
-        for (;j<strlen(buffer) && buffer[j] != '\t';j++) {
-            fprintf(stderr,"%c",buffer[j]);
+        struct entrada entrada;
+        mi_read_f(p_inodo,&entrada,i*sizeof(struct entrada),sizeof(struct entrada));
+        leer_inodo(entrada.ninodo,&inodo);
+
+        ts = localtime(&inodo.mtime);
+        strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+
+        if ((inodo.permisos & 6) == 6) {
+            strcpy(permisos,"rw-");
+        } else if ((inodo.permisos & 4) == 4) {
+            strcpy(permisos,"r--");
+        } else if ((inodo.permisos & 2) == 2) {
+            strcpy(permisos,"-w-");
+        } else {
+            strcpy(permisos,"---");
         }
-        fprintf(stderr,"\n");
+        fprintf(stderr,"%c       %s         %s     %d           %s\n", inodo.tipo,permisos, mtime, inodo.tamEnBytesLog,entrada.nombre);
     }
 
     return bumount();

@@ -289,8 +289,8 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
 }
 
 /*
-    buscar_entrada: crea el enlace de una entrada de directorio camino2 al inodo especificado
-                    por otra entrada de directorio camino1
+    mi_link: crea el enlace de una entrada de directorio camino2 al inodo especificado
+             por otra entrada de directorio camino1
     input: const char *camino1, const char *camino2
     output: -
     uses: 0 (success), -1 (failure)
@@ -320,19 +320,17 @@ int mi_link(const char *camino1, const char *camino2) {
     reservar = 1;
     // si no existe la entrada camino2
     if ((error = buscar_entrada(camino2, &p_inodo_dir2, &p_inodo2, &p_entrada2, reservar, 6)) == 0) {
-        //if (error == 0) {
-            struct entrada entrada;
-            mi_read_f(p_inodo_dir2,&entrada,sizeof(struct entrada)*p_entrada2,sizeof(struct entrada));
-            p_inodo2 = entrada.ninodo;
-            entrada.ninodo = p_inodo1; // hacemos el enlace asignándole el inodo de la primera entrada a la segunda
-            // escribimos la entrada modificada en p_inodo_dir2
-            mi_write_f(p_inodo_dir2,&entrada,sizeof(struct entrada)*p_entrada2,sizeof(struct entrada));
-            liberar_inodo(p_inodo2);
-            inodo1.nlinks++; // incrementamos la cantidad de enlaces de p_inodo1
-            time_t timer;
-            inodo1.ctime = time(&timer); // actualizamos el ctime
-            escribir_inodo(p_inodo1, inodo1); // salvamos el inodo
-        //}
+        struct entrada entrada;
+        mi_read_f(p_inodo_dir2, &entrada, sizeof(struct entrada) * p_entrada2, sizeof(struct entrada));
+        p_inodo2 = entrada.ninodo;
+        entrada.ninodo = p_inodo1; // hacemos el enlace asignándole el inodo de la primera entrada a la segunda
+        // escribimos la entrada modificada en p_inodo_dir2
+        mi_write_f(p_inodo_dir2, &entrada, sizeof(struct entrada) * p_entrada2, sizeof(struct entrada));
+        liberar_inodo(p_inodo2);
+        inodo1.nlinks++; // incrementamos la cantidad de enlaces de p_inodo1
+        time_t timer;
+        inodo1.ctime = time(&timer);      // actualizamos el ctime
+        escribir_inodo(p_inodo1, inodo1); // salvamos el inodo
         return 0;
     } else {
         mostrar_error_buscar_entrada(error);
@@ -348,7 +346,7 @@ int mi_unlink(const char *camino) {
     int error;
     struct inodo inodo, inodo_dir;
 
-    // comprobamos que la entrada camino1 existe
+    // comprobamos que la entrada camino existe
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, reservar, 6)) < 0) {
         mostrar_error_buscar_entrada(error);
         return -1;
