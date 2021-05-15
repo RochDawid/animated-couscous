@@ -41,6 +41,8 @@ int main(int argc,char **argv) {
         strcpy(permisos,"r--");
     } else if ((inodo.permisos & 2) == 2) {
         strcpy(permisos,"w--");
+    } else {
+        strcpy(permisos, "---");
     }
 
 
