@@ -8,7 +8,7 @@
 
 int main(int argc,char **argv) {
     if (argc != 4) {
-        fprintf(stderr,"Sintaxis: ./mi_mkdir <disco> <permisos> </ruta>\n");
+        fprintf(stderr,"Sintaxis: ./mi_mkdir <disco> <permisos> </ruta_directorio>\n");
         return -1;
     }
     if (bmount(argv[1]) < 0) return -1;
