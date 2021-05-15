@@ -20,13 +20,9 @@ int main(int argc,char **argv) {
     char buffer[TAMBUFFER];
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
-    unsigned int p_entrada = 0;
-    char permisos[3]; 
+    unsigned int p_entrada = 0; 
     char reservar = 0;
-    struct inodo inodo;
     int error;
-    char mtime[80];
-    struct tm *ts;
 
     if ((error = buscar_entrada(argv[2],&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
         mostrar_error_buscar_entrada(error);
@@ -43,6 +39,11 @@ int main(int argc,char **argv) {
 
     for (int i=0;i<numEntradas;i++) {
         struct entrada entrada;
+        struct inodo inodo;
+        struct tm *ts;
+        char mtime[80];
+        char permisos[3];
+
         mi_read_f(p_inodo,&entrada,i*sizeof(struct entrada),sizeof(struct entrada));
         leer_inodo(entrada.ninodo,&inodo);
 
