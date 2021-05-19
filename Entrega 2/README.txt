@@ -14,12 +14,13 @@ Durante la implementación de esta parte del proyecto hemos tenido algunos probl
 eran recogidos desde otras llamadas a funciones y se trataban de forma incorrecta. Para solucionar esta situación hemos verificado que todas las
 funciones retornaban los valores pertinentes para que las llamadas a estas no creasen estos problemas.
 
-En relación a esto se ha tenido que modificar el valor de EXIT_FAILURE de la librería otorgada.
+En relación a esto se ha tenido que suprimir el valor de EXIT_FAILURE de la librería otorgada y usar nuestros propios códigos de error
+(0 si todo va bien y 1 si ha habido algún error).
 
 Por otra parte, a diferencia de la anterior entrega del proyecto, se han implementado algunas de las mejoras que contempla la plantilla de corrección:
-    - mi_ls mejorado
-    - implementación del comando mi_touch
+    - comando mi_ls mejorado para mostrar más información sobre cada entrada del directorio
+    - implementación del comando mi_touch para la creación de ficheros, dejando mi_mkdir solo para la creación de directorios
     - escritura desde fichero externo en escribir.c
-    - mejora del init_MB
-    - implementación de un buffer de entradas en buscar_entrada() y mi_dir()
-    - creación del comando extra mi_rmdir que elimina los directorios vacíos
+    - mejora del init_MB()
+    - implementación de un buffer de entradas en buscar_entrada() y mi_dir() para reducir las llamadas a lecturas
+    - creación del comando extra mi_rmdir que elimina los directorios vacíos a excepción del directorio raíz

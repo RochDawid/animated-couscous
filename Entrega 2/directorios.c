@@ -176,7 +176,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     input: const char *camino, unsigned char permisos
     output:  0
     uses: buscar_entrada(),mostrar_error_buscar_entrada()
-    used by: mi_mkdir.c
+    used by: mi_mkdir.c, mi_touch.c
 */
 int mi_creat(const char *camino, unsigned char permisos) {
     unsigned int p_inodo_dir = 0;
