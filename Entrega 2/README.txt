@@ -16,6 +16,10 @@ funciones retornaban los valores pertinentes para que las llamadas a estas no cr
 
 En relación a esto se ha tenido que modificar el valor de EXIT_FAILURE de la librería otorgada.
 
-Por otra parte, a diferencia de la anterior entrega del proyecto, se han implementado algunas de las mejoras que contempla la plantilla de corrección
-como el mi_ls mejorado, la implementación del comando mi_touch, escritura desde fichero externo en escribir.c, la mejora del init_MB, la implementación
-de un buffer de entradas en buscar_entrada() y mi_dir() y se ha creado un comando extra mi_rmdir que elimina los directorios vacíos.
+Por otra parte, a diferencia de la anterior entrega del proyecto, se han implementado algunas de las mejoras que contempla la plantilla de corrección:
+    - mi_ls mejorado
+    - implementación del comando mi_touch
+    - escritura desde fichero externo en escribir.c
+    - mejora del init_MB
+    - implementación de un buffer de entradas en buscar_entrada() y mi_dir()
+    - creación del comando extra mi_rmdir que elimina los directorios vacíos
