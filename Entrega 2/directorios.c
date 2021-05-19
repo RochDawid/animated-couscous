@@ -73,8 +73,8 @@ void mostrar_error_buscar_entrada(int error) {
     buscar_entrada: busca una determinada entrada entre las entradas del inodo correspondiente a su inodo padre.
     input: const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada,
            char reservar, unsigned char permisos
-    output: -
-    uses: 0 (success), -1 (failure)
+    output: 0 (success), -1 (failure)
+    uses: 
     used by: leer_sf.c
 */
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos) {
@@ -171,6 +171,13 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
     return EXIT_SUCCESS;
 }
 
+/*
+    mi_creat: Función de la capa de directorios que crea un fichero/directorio y su entrada de directorio.
+    input: const char *camino, unsigned char permisos
+    output:  0
+    uses: buscar_entrada(),mostrar_error_buscar_entrada()
+    used by: mi_mkdir.c
+*/
 int mi_creat(const char *camino, unsigned char permisos) {
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
@@ -228,6 +235,13 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
     return num_entrada_inodo;
 }
 
+/*
+    mi_chmod: Buscar la entrada *camino con buscar_entrada() para obtener el nº de inodo
+    input: const char *camino, unsigned char permisos
+    output:  0
+    uses: buscar_entrada(),mostrar_error_buscar_entrada(), mi_chmod_f()
+    used by: mi_chmod.c
+*/
 int mi_chmod(const char *camino, unsigned char permisos) {
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
@@ -243,6 +257,13 @@ int mi_chmod(const char *camino, unsigned char permisos) {
     return EXIT_SUCCESS;
 }
 
+/*
+    mi_stat: Buscar la entrada *camino con buscar_entrada() para obtener el p_inodo.
+    input: const char *camino, struct STAT *p_stat
+    output:  0
+    uses: buscar_entrada(),mostrar_error_buscar_entrada()
+    used by: mi_mkdir.c
+*/
 int mi_stat(const char *camino, struct STAT *p_stat) {
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
@@ -259,6 +280,14 @@ int mi_stat(const char *camino, struct STAT *p_stat) {
     return p_inodo;
 }
 
+/*
+    mi_write: Función de directorios.c para escribir contenido en un fichero. 
+            Buscaremos la entrada camino con buscar_entrada() para obtener el p_inodo
+    input: const char *camino, unsigned char permisos
+    output:  0
+    uses: buscar_entrada(),mostrar_error_buscar_entrada(), mi_write_f()
+    used by: mi_escribir.c
+*/
 int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned int nbytes){
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
@@ -274,6 +303,14 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
     return mi_write_f(p_inodo, buf, offset, nbytes);
 }
 
+/*
+    mi_read: leer los nbytes del fichero indicado por camino, a partir del offset pasado por parámetro 
+            y copiarlos en el buffer buf
+    input: const char *camino, unsigned char permisos
+    output:  0
+    uses: buscar_entrada(),mostrar_error_buscar_entrada(), mi_read_f()
+    used by: mi_cat.c
+*/
 int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nbytes){
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
@@ -283,7 +320,7 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
 
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
         mostrar_error_buscar_entrada(error);
-        return 0;
+        return -1;
     }
     return mi_read_f(p_inodo, buf, offset, nbytes);
 }
@@ -338,6 +375,15 @@ int mi_link(const char *camino1, const char *camino2) {
     }
 }
 
+/*
+    mi_unlink: Función de la capa de directorios que borra la entrada de directorio especificada (no hay que 
+            olvidar actualizar la cantidad de enlaces en el inodo) y, en caso de que fuera el último enlace existente, 
+            borrar el propio fichero/directorio.
+    input: const char *camino
+    output: 0 (success), -1 (failure)
+    uses: 
+    used by: mi_rm.c, mi_rmdir.c
+*/
 int mi_unlink(const char *camino) {
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
@@ -361,6 +407,8 @@ int mi_unlink(const char *camino) {
 
     leer_inodo(p_inodo_dir, &inodo_dir);
     int nEntradas = inodo_dir.tamEnBytesLog/sizeof(struct entrada);
+    // Si la entrada a eliminar NO es la última, entonces tenemos que leer la última y colocarla en la posición 
+    // de la entrada que queremos eliminar
     if (p_entrada != nEntradas-1) {
         struct entrada entrada;
         mi_read_f(p_inodo_dir,&entrada,inodo_dir.tamEnBytesLog-sizeof(struct entrada),sizeof(struct entrada));
@@ -368,8 +416,10 @@ int mi_unlink(const char *camino) {
     }
     mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog-sizeof(struct entrada));
 
+    // decrementar el nº de enlaces
     leer_inodo(p_inodo, &inodo);
     inodo.nlinks--;
+    // Si no quedan enlaces entonces liberaremos el inodo
     if (inodo.nlinks == 0) {
         liberar_inodo(p_inodo);
 
