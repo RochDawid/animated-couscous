@@ -7,12 +7,13 @@
 #include "bloques.h"
 
 static int descriptor = 0;
+static sem_t *mutex;
 
 /*
     bmount: para montar el dispositivo virtual, y dado que se trata de un fichero, esa acción consistirá en abrirlo
     input: const char *camino
     output: int descriptor
-    uses: umask(),open(),perror()
+    uses: umask(),open(),perror(), initSem()
     used by: mi_mkfs->main(), leer_sf(), leer.c, permitir.c truncar.c
 */
 int bmount(const char *camino) {
@@ -24,6 +25,13 @@ int bmount(const char *camino) {
         return -1;
     }
 
+    if (!mutex) {
+        mutex = initSem();
+        if (mutex == SEM_FAILED) {
+            return -1;
+        }
+    }
+
     return descriptor;
 }
 
@@ -31,7 +39,7 @@ int bmount(const char *camino) {
     bumount: desmonta el dispositivo virtual
     input: none
     output: 0 on success / -1 on failure
-    uses: close(),perror()
+    uses: close(),perror(), deleteSem()
     used by: mi_mkfs->main(), leer_sf.c, leer.c, permitir.c, truncar.c
 */
 int bumount() {
@@ -39,6 +47,8 @@ int bumount() {
         perror("Error desmontando el dispositivo virtual");
         return -1;
     }
+
+    deleteSem();
     
     return 0;
 }
@@ -79,4 +89,12 @@ int bread(unsigned int nbloque, void *buf) {
 
     perror("Error leyendo del dispositivo virtual");
     return -1;
+}
+
+void mi_waitSem() {
+    waitSem(mutex);
+}
+
+void mi_signalSem() {
+    signalSem(mutex);
 }
