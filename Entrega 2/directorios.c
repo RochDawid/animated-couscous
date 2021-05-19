@@ -112,7 +112,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         int offset = 0;
         mi_read_f(*p_inodo_dir,entradas,offset,BLOCKSIZE);
         while (num_entrada_inodo < cant_entradas_inodo && strcmp(inicial,entradas[indice].nombre)) {
-            for (;(num_entrada_inodo < cant_entradas_inodo) && strcmp(inicial,entradas[indice].nombre) && indice < BLOCKSIZE/sizeof(struct entrada);num_entrada_inodo++,indice++) {}
+            for (;(num_entrada_inodo < cant_entradas_inodo) && indice < BLOCKSIZE/sizeof(struct entrada) && strcmp(inicial,entradas[indice].nombre);num_entrada_inodo++,indice++) {}
             if (indice == BLOCKSIZE/sizeof(struct entrada)) {
                 indice = 0;
                 offset += BLOCKSIZE;
@@ -159,7 +159,11 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsign
         if ((num_entrada_inodo < cant_entradas_inodo) && reservar == 1) {
             return ERROR_ENTRADA_YA_EXISTENTE;
         }
-        *p_inodo = entradas[indice].ninodo;
+        if (reservar==1) {
+            *p_inodo = entrada.ninodo;
+        } else {
+            *p_inodo = entradas[indice].ninodo;
+        }
         *p_entrada = num_entrada_inodo;
 
         return EXIT_SUCCESS;
@@ -359,7 +363,6 @@ int mi_link(const char *camino1, const char *camino2) {
     if ((error = buscar_entrada(camino2, &p_inodo_dir2, &p_inodo2, &p_entrada2, reservar, 6)) == 0) {
         struct entrada entrada;
         mi_read_f(p_inodo_dir2, &entrada, sizeof(struct entrada) * p_entrada2, sizeof(struct entrada));
-        p_inodo2 = entrada.ninodo;
         entrada.ninodo = p_inodo1; // hacemos el enlace asignándole el inodo de la primera entrada a la segunda
         // escribimos la entrada modificada en p_inodo_dir2
         mi_write_f(p_inodo_dir2, &entrada, sizeof(struct entrada) * p_entrada2, sizeof(struct entrada));
