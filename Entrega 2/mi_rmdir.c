@@ -7,12 +7,13 @@
 #include "directorios.h"
 
 int main(int argc,char **argv) {
+    // comprobamos la sintaxis
     if (argc != 3) {
         fprintf(stderr,"Sintaxis: ./mi_rmdir disco /ruta_directorio\n");
         return -1;
     }
     if (bmount(argv[1]) < 0) return -1;
-
+    // comprobamos que no se trate de un fichero
     if (argv[2][strlen(argv[2]) - 1] != '/'){
         fprintf(stderr, "Error: la ruta se corresponde a un fichero\n");
         return -1;
@@ -20,7 +21,7 @@ int main(int argc,char **argv) {
 
     // no borramos el directorio raíz
     if (!(strlen(argv[2]) == 1 && argv[2][0] == '/')) {
-        mi_unlink(argv[2]);
+        mi_unlink(argv[2]); // deshacemos el enlace
     }
     return bumount();
 }

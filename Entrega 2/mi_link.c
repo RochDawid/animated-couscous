@@ -18,6 +18,6 @@ int main(int argc,char **argv) {
         fprintf(stderr, "Error: la ruta se corresponde a un directorio");
         exit(-1);
     }
-    mi_link(argv[2],argv[3]);
+    mi_link(argv[2],argv[3]); // creamos el enlace
     return bumount();
 }

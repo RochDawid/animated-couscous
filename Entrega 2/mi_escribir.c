@@ -3,7 +3,8 @@
     Antoni Payeras Munar
     Dawid Michal Roch Móll
 */
-//Programa para testear las cachés de directorios
+
+// **Programa para testear las cachés de directorios**
 
 #include "directorios.h"
 
@@ -17,17 +18,17 @@ int main(int argc, char **argv){
     //struct STAT stat;
     //montamos el dispositivo
     if (bmount(argv[1]) < 0) return -1;
-    //obtenemos el texto y su longitud
+    // obtenemos el texto y su longitud
     char *buffer_texto = argv[3];
     int longitud = strlen(buffer_texto);
 
-    //obtenemos la ruta y comprobamos que no se refiera a un directorio
+    // obtenemos la ruta y comprobamos que no se refiera a un directorio
     if (argv[2][strlen(argv[2]) - 1] == '/'){
         fprintf(stderr, "Error: la ruta se corresponde a un directorio");
         exit(-1);
     }
     char *camino = argv[2];
-    //obtenemos el offset
+    // obtenemos el offset
     unsigned int offset = atoi(argv[4]);
     int escritos = 0;
     fprintf(stderr, "longitud texto: %d\n", longitud);
@@ -42,6 +43,5 @@ int main(int argc, char **argv){
     printf("stat.tamEnBytesLog=%d\n",stat.tamEnBytesLog);
     printf("stat.numBloquesOcupados=%d\n",stat.numBloquesOcupados);
     */
-
-    if (bumount() < 0) return -1;
+    return bumount();
 }

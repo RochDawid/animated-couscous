@@ -13,8 +13,8 @@ int main(int argc,char **argv) {
     }
     if (bmount(argv[1]) < 0) return -1;
     int permisos = atoi(argv[2]);
-    if (permisos >= 0 && permisos <= 7) {
-        mi_chmod(argv[3],permisos);
+    if (permisos >= 0 && permisos <= 7) { // si los permisos dados son válidos
+        mi_chmod(argv[3],permisos); // cambiamos los permisos
         return bumount();
     }
     fprintf(stderr,"Error: modo inválido: <<%d>>\n", permisos);

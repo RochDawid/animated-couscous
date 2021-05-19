@@ -7,11 +7,13 @@
 #include "directorios.h"
 
 int main(int argc,char **argv) {
+    // comprobamos la sintaxis
     if (argc != 3) {
         fprintf(stderr,"Sintaxis: ./mi_ls <disco> </ruta_directorio>\n");
         return -1;
     }
     if (bmount(argv[1]) < 0) return -1;
+    // comprobamos que no se trate de un fichero
     if (argv[2][strlen(argv[2]) - 1] != '/'){
         fprintf(stderr, "Error: la ruta se corresponde a un fichero\n");
         return -1;
@@ -25,11 +27,11 @@ int main(int argc,char **argv) {
     int error;
 
     if ((error = buscar_entrada(argv[2],&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
-        mostrar_error_buscar_entrada(error);
+        mostrar_error_buscar_entrada(error); // en caso de error, lo visualizamos
         return -1;
     }
 
-    memset(buffer,0,TAMBUFFER);
+    memset(buffer,0,TAMBUFFER); // inicializamos el buffer a 0
     int numEntradas = mi_dir(argv[2],buffer);
     if (numEntradas == -1) return -1;
 

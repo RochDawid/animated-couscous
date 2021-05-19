@@ -11,7 +11,7 @@ int main(int argc,char **argv) {
         fprintf(stderr, "Sintaxis: ./mi_cat <disco> </ruta_fichero> \n");
         exit(-1);
     }
-    int offset = 0, leidos = 0, contadorLeidos = 0, tambuffer = BLOCKSIZE*4; //PROBAR tambuffer=1500
+    int offset = 0, leidos = 0, contadorLeidos = 0, tambuffer = BLOCKSIZE*4;
     char buffer[tambuffer];
     char string[128];
 

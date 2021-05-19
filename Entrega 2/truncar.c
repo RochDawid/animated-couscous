@@ -7,7 +7,8 @@
 #include "ficheros.h"
 
 int main(int argc,char **argv) {
-    if (argv[1] && argv[2] && argv[3]) {
+    // comprobamos la sintaxis
+    if (argc == 3) {
         int ninodo = atoi(argv[2]);
         int nbytes = atoi(argv[3]);
         if (bmount(argv[1]) < 0) return -1;
@@ -40,8 +41,10 @@ int main(int argc,char **argv) {
         fprintf(stderr,"nlinks=%d\n",inodo.nlinks);
         fprintf(stderr,"tamEnBytesLog=%d\n",inodo.tamEnBytesLog);
         fprintf(stderr,"numBloquesOcupados=%d\n",inodo.numBloquesOcupados);
+
         return bumount();
     }
+
     fprintf(stderr,"Sintaxis: truncar <disco> <ninodo> <nbytes> \n");
     return -1;
 }

@@ -7,13 +7,13 @@
 #include "directorios.h"
 
 int main(int argc,char **argv) {
+    // comprobamos la sintaxis
     if (argc != 3) {
         fprintf(stderr,"Sintaxis: ./mi_stat <disco> </ruta>\n");
     }
     if (bmount(argv[1]) < 0) return -1;
     struct STAT state;
     unsigned int ninodo = mi_stat(argv[2],&state);
-    
     struct tm *ts;
     char atime[80];
     char mtime[80];
