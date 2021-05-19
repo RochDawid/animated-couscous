@@ -34,32 +34,35 @@ int main(int argc,char **argv) {
     if (numEntradas == -1) return -1;
 
     fprintf(stderr,"Total: %d\n",numEntradas);
-    fprintf(stderr,"Tipo    Permisos    mTime                       Tamaño      Nombre        \n");
-    fprintf(stderr,"--------------------------------------------------------------------------\n");
 
-    for (int i=0;i<numEntradas;i++) {
-        struct entrada entrada;
-        struct inodo inodo;
-        struct tm *ts;
-        char mtime[80];
-        char permisos[3];
+    if (numEntradas > 0) {
+        fprintf(stderr,"Tipo    Permisos    mTime                       Tamaño      Nombre        \n");
+        fprintf(stderr,"--------------------------------------------------------------------------\n");
 
-        mi_read_f(p_inodo,&entrada,i*sizeof(struct entrada),sizeof(struct entrada));
-        leer_inodo(entrada.ninodo,&inodo);
+        for (int i=0;i<numEntradas;i++) {
+            struct entrada entrada;
+            struct inodo inodo;
+            struct tm *ts;
+            char mtime[80];
+            char permisos[3];
 
-        ts = localtime(&inodo.mtime);
-        strftime(mtime, sizeof(mtime), "%Y-%m-%d %H:%M:%S", ts);
+            mi_read_f(p_inodo,&entrada,i*sizeof(struct entrada),sizeof(struct entrada));
+            leer_inodo(entrada.ninodo,&inodo);
 
-        if ((inodo.permisos & 6) == 6) {
-            strcpy(permisos,"rw-");
-        } else if ((inodo.permisos & 4) == 4) {
-            strcpy(permisos,"r--");
-        } else if ((inodo.permisos & 2) == 2) {
-            strcpy(permisos,"-w-");
-        } else {
-            strcpy(permisos,"---");
+            ts = localtime(&inodo.mtime);
+            strftime(mtime, sizeof(mtime), "%Y-%m-%d %H:%M:%S", ts);
+
+            if ((inodo.permisos & 6) == 6) {
+                strcpy(permisos,"rw-");
+            } else if ((inodo.permisos & 4) == 4) {
+                strcpy(permisos,"r--");
+            } else if ((inodo.permisos & 2) == 2) {
+                strcpy(permisos,"-w-");
+            } else {
+                strcpy(permisos,"---");
+            }
+            fprintf(stderr,"%c       %s         %s         %d          %s\n", inodo.tipo,permisos, mtime, inodo.tamEnBytesLog,entrada.nombre);
         }
-        fprintf(stderr,"%c       %s         %s     %d           %s\n", inodo.tipo,permisos, mtime, inodo.tamEnBytesLog,entrada.nombre);
     }
 
     return bumount();
