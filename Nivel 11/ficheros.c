@@ -21,7 +21,9 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         unsigned int ultimoBL = (offset + nbytes - 1)/BLOCKSIZE;
         unsigned int desp1 = offset%BLOCKSIZE;
         unsigned int desp2 = (offset + nbytes - 1)%BLOCKSIZE;
+        mi_waitSem;
         unsigned int nbfisico = traducir_bloque_inodo(ninodo,primerBL,1);
+        mi_signalSem;
         unsigned char buf_bloque[BLOCKSIZE];
         unsigned int bytesEscritos;
         if (bread(nbfisico,buf_bloque) < 0) return -1;
@@ -34,15 +36,20 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
             bytesEscritos = bwrite(nbfisico,buf_bloque) - desp1;
             if (bytesEscritos < 0) return -1;
             for (int i = primerBL + 1;i < ultimoBL;i++) {
+                mi_waitSem;
                 nbfisico = traducir_bloque_inodo(ninodo,i,1);
+                mi_signalSem;
                 bytesEscritos += bwrite(nbfisico,buf_original + (BLOCKSIZE - desp1) + (i-primerBL-1)*BLOCKSIZE);
             }
+            mi_waitSem;
             nbfisico = traducir_bloque_inodo(ninodo,ultimoBL,1);
+            mi_signalSem;
             if (bread(nbfisico,buf_bloque) < 0) return -1;
             memcpy(buf_bloque, buf_original + (nbytes - desp2 - 1),desp2 + 1);
             bytesEscritos += bwrite(nbfisico,buf_bloque) - (BLOCKSIZE - (desp2 + 1));
         }
 
+        mi_waitSem;
         if (leer_inodo(ninodo,&inodo) < 0) return -1;
         time_t timer;
         if (offset > inodo.tamEnBytesLog || (offset + bytesEscritos) > inodo.tamEnBytesLog) {
@@ -52,6 +59,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         
         inodo.mtime = time(&timer);
         if (escribir_inodo(ninodo,inodo) < 0) return -1;
+        mi_signalSem;
             
         return bytesEscritos;
     } else {
@@ -113,13 +121,14 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
                 memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque,desp2 + 1);
             }
             bytesLeidos += desp2 + 1;
-        }
-        
-        if (leer_inodo(ninodo,&inodo) < 0) return -1;
-        time_t timer;
-        inodo.atime = time(&timer);
-        if (escribir_inodo(ninodo,inodo) < 0) return -1;
 
+            mi_waitSem;
+            if (leer_inodo(ninodo,&inodo) < 0) return -1;
+            time_t timer;
+            inodo.atime = time(&timer);
+            if (escribir_inodo(ninodo,inodo) < 0) return -1;
+            mi_signalSem;
+        }
     } else {
         perror("Error: no dispone de permisos para leer el fichero/directorio.");
     }
@@ -158,10 +167,12 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat) {
 int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
     struct inodo inodo;
     time_t timer;
+    mi_waitSem();
     if (leer_inodo(ninodo, &inodo) < 0) return -1;
     inodo.permisos = permisos;
     inodo.ctime = time(&timer);
     if (escribir_inodo(ninodo, inodo) < 0) return -1;
+    mi_signalSem();
 
     return 0;
 }

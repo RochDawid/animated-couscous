@@ -8,6 +8,7 @@
 
 static int descriptor = 0;
 static sem_t *mutex;
+static unsigned int inside_sc = 0;
 
 /*
     bmount: para montar el dispositivo virtual, y dado que se trata de un fichero, esa acción consistirá en abrirlo
@@ -92,9 +93,15 @@ int bread(unsigned int nbloque, void *buf) {
 }
 
 void mi_waitSem() {
-    waitSem(mutex);
+    if (!inside_sc) {
+        waitSem(mutex);
+    }
+    inside_sc++;
 }
 
 void mi_signalSem() {
-    signalSem(mutex);
+    inside_sc--;
+    if (!inside_sc) {
+        signalSem(mutex);
+    }
 }

@@ -182,9 +182,13 @@ int mi_creat(const char *camino, unsigned char permisos) {
     char reservar = 1;
     int error;
 
+    mi_waitSem;
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos)) < 0) {
         mostrar_error_buscar_entrada(error);
+        mi_signalSem;
+        return -1;
     }
+    mi_signalSem;
     return 0;
 }
 
