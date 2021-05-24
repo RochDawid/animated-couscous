@@ -182,13 +182,13 @@ int mi_creat(const char *camino, unsigned char permisos) {
     char reservar = 1;
     int error;
 
-    mi_waitSem;
+    mi_waitSem();
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,permisos)) < 0) {
         mostrar_error_buscar_entrada(error);
-        mi_signalSem;
+        mi_signalSem();
         return -1;
     }
-    mi_signalSem;
+    mi_signalSem();
     return 0;
 }
 
@@ -327,6 +327,7 @@ int mi_link(const char *camino1, const char *camino2) {
 
     reservar = 1;
     // si no existe la entrada camino2
+    mi_waitSem();
     if ((error = buscar_entrada(camino2, &p_inodo_dir2, &p_inodo2, &p_entrada2, reservar, 6)) == 0) {
         struct entrada entrada;
         mi_read_f(p_inodo_dir2, &entrada, sizeof(struct entrada) * p_entrada2, sizeof(struct entrada));
@@ -338,9 +339,11 @@ int mi_link(const char *camino1, const char *camino2) {
         time_t timer;
         inodo1.ctime = time(&timer);      // actualizamos el ctime
         escribir_inodo(p_inodo1, inodo1); // salvamos el inodo
+        mi_signalSem();
         return 0;
     } else {
         mostrar_error_buscar_entrada(error);
+        mi_signalSem();
         return -1;
     }
 }
@@ -375,16 +378,18 @@ int mi_unlink(const char *camino) {
     }
     mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog-sizeof(struct entrada));
 
+    mi_waitSem();
     leer_inodo(p_inodo, &inodo);
     inodo.nlinks--;
     if (inodo.nlinks == 0) {
         liberar_inodo(p_inodo);
-
+        mi_signalSem();
         return 1;
     } else {
         time_t timer;
         inodo.ctime = time(&timer); // actualizamos el ctime
         escribir_inodo(p_inodo,inodo);
+        mi_signalSem();
         return 0;
     }
 }
