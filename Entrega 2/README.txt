@@ -20,7 +20,7 @@ En relación a esto se ha tenido que suprimir el valor de EXIT_FAILURE de la lib
 Por otra parte, a diferencia de la anterior entrega del proyecto, se han implementado algunas de las mejoras que contempla la plantilla de corrección:
     - comando mi_ls mejorado para mostrar más información sobre cada entrada del directorio
     - implementación del comando mi_touch para la creación de ficheros, dejando mi_mkdir solo para la creación de directorios
-    - escritura desde fichero externo en escribir.c
+    - escritura desde fichero externo en escribir.c (CORRECCIÓN: a implementar para la siguiente entrega)
     - mejora del init_MB()
     - implementación de un buffer de entradas en buscar_entrada() y mi_dir() para reducir las llamadas a lecturas
-    - creación del comando extra mi_rmdir que elimina los directorios vacíos a excepción del directorio raíz
+    - creación del comando extra mi_rmdir que elimina los directorios a excepción del directorio raíz
