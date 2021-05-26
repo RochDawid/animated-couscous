@@ -8,6 +8,7 @@
 
 #define NUMPROCESOS 3 //100000
 #define REGMAX 500000
+#define NUMESCRITRAS 5 //50
 
 struct REGISTRO { //sizeof(struct REGISTRO): 24
    time_t fecha; //Precisión segundos
