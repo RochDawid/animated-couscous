@@ -310,7 +310,7 @@ int mi_link(const char *camino1, const char *camino2) {
     struct inodo inodo1;
 
     // comprobamos que la entrada camino1 existe
-    mi_waitSem():
+    mi_waitSem();
     if ((error = buscar_entrada(camino1, &p_inodo_dir1, &p_inodo1, &p_entrada1, reservar, 6)) < 0) {
         mostrar_error_buscar_entrada(error);
         mi_signalSem();

@@ -6,9 +6,9 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#define NUMPROCESOS 3 //100000
+#define NUMPROCESOS 100
 #define REGMAX 500000
-#define NUMESCRITRAS 5 //50
+#define NUMESCRITURAS 50
 
 struct REGISTRO { //sizeof(struct REGISTRO): 24
    time_t fecha; //Precisión segundos

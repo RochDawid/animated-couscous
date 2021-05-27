@@ -48,7 +48,7 @@ int bmount(const char *camino) {
 */
 int bumount() {
     descriptor = close(descriptor);
-    if ( == -1) {
+    if (descriptor == -1) {
         perror("Error desmontando el dispositivo virtual");
         return -1;
     }
