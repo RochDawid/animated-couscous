@@ -25,15 +25,13 @@ int main(int argc,char **argv) {
 
     if (bmount(argv[1]) < 0) return -1;
 
-    char ruta[150];
+    char ruta[100];
     struct tm *ts;
     time_t timer = time(NULL);
-    char tiempo[80];
 
     ts = localtime(&timer);
-    strftime(tiempo, sizeof(tiempo), "/simul_%Y%m%d%H%M%S/", ts);
+    strftime(ruta, sizeof(ruta), "/simul_%Y%m%d%H%M%S/", ts);
 
-    strcpy(ruta,tiempo);
     if (mi_creat(ruta,7) == -1) return -1;
     for (int numProcesos = 1; numProcesos <= NUMPROCESOS;numProcesos++) {
         pid_t pid = fork();
