@@ -40,7 +40,7 @@ int main(int argc,char **argv) {
             strcat(ruta,"proceso_");
             strcat(ruta,idProceso);
             if (mi_creat(ruta,7) == -1) return -1;
-            strcat(ruta,"pruebas.dat");
+            strcat(ruta,"prueba.dat");
             if (mi_creat(ruta,7) == -1) return -1;
             srand(time(NULL) + getpid());
             int nEscritura = 1;
