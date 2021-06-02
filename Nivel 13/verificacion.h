@@ -15,3 +15,5 @@ struct INFORMACION {
   struct REGISTRO MenorPosicion;
   struct REGISTRO MayorPosicion;
 };
+
+int saveInformacion(struct INFORMACION info, char *output);
