@@ -51,7 +51,10 @@ int main(int argc,char **argv) {
                 registro.nEscritura = nEscritura;
                 registro.nRegistro = rand() % REGMAX;
 
-                mi_write(ruta,&registro,registro.nRegistro*sizeof(struct REGISTRO),sizeof(struct REGISTRO));
+                if (mi_write(ruta,&registro,registro.nRegistro*sizeof(struct REGISTRO),sizeof(struct REGISTRO)) == -1) {
+                    fprintf(stderr,"fallo\n");
+                    return -1;
+                }
                 //fprintf(stderr,"simulacion.c -> Escritura %d en %s\n",nEscritura,ruta);
                 usleep(50000);
             }
