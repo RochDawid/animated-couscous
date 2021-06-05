@@ -1,9 +1,9 @@
-/* semaforo_mutex_posix.c */
 /*
     Sergi Moreno Pérez
     Antoni Payeras Munar
     Dawid Michal Roch Móll
 */
+
 #include "semaforo_mutex_posix.h"
  
 /* Ejemplo de creación e inicialización de semáforos POSIX para MUTEX con "semáforos con nombre" (named) */

@@ -96,6 +96,10 @@ int bread(unsigned int nbloque, void *buf) {
     return -1;
 }
 
+/*
+    Para evitar que se haga el wait dos o más veces (código reentrante)
+*/
+
 void mi_waitSem() {
     if (!inside_sc) {
         waitSem(mutex);

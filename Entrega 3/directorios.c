@@ -347,6 +347,15 @@ int mi_link(const char *camino1, const char *camino2) {
     }
 }
 
+/*
+    mi_unlink: Función de la capa de directorios que borra la entrada de directorio especificada (no hay que olvidar 
+            actualizar la cantidad de enlaces en el inodo) y, en caso de que fuera el último enlace existente, 
+            borrar el propio fichero/directorio.
+    input: const char *camino
+    output: -
+    uses: 0 (success), -1 (failure)
+    used by: mi_rm.c
+*/
 int mi_unlink(const char *camino) {
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;

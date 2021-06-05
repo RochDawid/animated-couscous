@@ -1,3 +1,9 @@
+/*
+    Sergi Moreno Pérez
+    Antoni Payeras Munar
+    Dawid Michal Roch Móll
+*/
+
 #include "directorios.h"
 #include "simulacion.h"
 
@@ -27,6 +33,7 @@ int main(int argc,char **argv) {
     ts = localtime(&timer);
     strftime(ruta, sizeof(ruta), "/simul_%Y%m%d%H%M%S/", ts);
 
+    // creamos el directorio de simulación
     if (mi_creat(ruta,7) == -1) return -1;
     for (int numProcesos = 1; numProcesos <= NUMPROCESOS;numProcesos++) {
         pid_t pid = fork();
@@ -36,14 +43,17 @@ int main(int argc,char **argv) {
             }
             char idProceso[5];
             sprintf(idProceso, "%d", getpid());
+            // creación del directorio del proceso
             strcat(idProceso,"/");
             strcat(ruta,"proceso_");
             strcat(ruta,idProceso);
             if (mi_creat(ruta,7) == -1) return -1;
+            // creación del fichero 'prueba.dat'
             strcat(ruta,"prueba.dat");
             if (mi_creat(ruta,7) == -1) return -1;
             srand(time(NULL) + getpid());
             int nEscritura = 1;
+            // escritura de múltiples REGISTRO en el fichero creado
             for (;nEscritura <= NUMESCRITURAS;nEscritura++) {
                 struct REGISTRO registro;
                 registro.fecha = time(NULL);

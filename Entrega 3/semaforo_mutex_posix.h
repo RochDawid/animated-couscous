@@ -1,9 +1,9 @@
- /* semaforo_mutex_posix.h */
- /*
+/*
     Sergi Moreno Pérez
     Antoni Payeras Munar
     Dawid Michal Roch Móll
 */
+/* semaforo_mutex_posix.h */
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <fcntl.h>

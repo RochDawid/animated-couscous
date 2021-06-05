@@ -50,7 +50,11 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         }
 
         mi_waitSem();
-        if (leer_inodo(ninodo,&inodo) < 0) return -1;
+        if (leer_inodo(ninodo,&inodo) < 0) {
+            mi_signalSem();
+            return -1;
+        }
+
         time_t timer;
         if (offset > inodo.tamEnBytesLog || (offset + bytesEscritos) > inodo.tamEnBytesLog) {
             inodo.tamEnBytesLog = offset + bytesEscritos;
@@ -58,7 +62,10 @@ int mi_write_f(unsigned int ninodo, const void *buf_original, unsigned int offse
         }
         
         inodo.mtime = time(&timer);
-        if (escribir_inodo(ninodo,inodo) < 0) return -1;
+        if (escribir_inodo(ninodo,inodo) < 0) {
+            mi_signalSem();
+            return -1;
+        }
         mi_signalSem();
             
         return bytesEscritos;
@@ -129,10 +136,16 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
             bytesLeidos += desp2 + 1;
 
             mi_waitSem();
-            if (leer_inodo(ninodo,&inodo) < 0) return -1;
+            if (leer_inodo(ninodo,&inodo) < 0) {
+                mi_signalSem();
+                return -1;
+            }
             time_t timer;
             inodo.atime = time(&timer);
-            if (escribir_inodo(ninodo,inodo) < 0) return -1;
+            if (escribir_inodo(ninodo,inodo) < 0) {
+                mi_signalSem();
+                return -1;
+            }
             mi_signalSem();
         }
     } else {
@@ -174,10 +187,16 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos) {
     struct inodo inodo;
     time_t timer;
     mi_waitSem();
-    if (leer_inodo(ninodo, &inodo) < 0) return -1;
+    if (leer_inodo(ninodo, &inodo) < 0) {
+        mi_signalSem();
+        return -1;
+    }
     inodo.permisos = permisos;
     inodo.ctime = time(&timer);
-    if (escribir_inodo(ninodo, inodo) < 0) return -1;
+    if (escribir_inodo(ninodo, inodo) < 0) {
+        mi_signalSem();
+        return -1;
+    }
     mi_signalSem();
 
     return 0;
@@ -204,12 +223,18 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) { // no se puede trun
         }
         mi_waitSem();
         bloquesLiberados = liberar_bloques_inodo(primerBL, &inodo);
-        if (bloquesLiberados < 0) return -1;
+        if (bloquesLiberados < 0) {
+            mi_signalSem();
+            return -1;
+        }
         inodo.mtime = time(&timer);
         inodo.ctime = time(&timer);
         inodo.tamEnBytesLog = nbytes;
         inodo.numBloquesOcupados -= bloquesLiberados;
-        if (escribir_inodo(ninodo, inodo) < 0) return -1;
+        if (escribir_inodo(ninodo, inodo) < 0) {
+            mi_signalSem();
+            return -1;
+        }
         mi_signalSem();
 
         return bloquesLiberados;

@@ -4,7 +4,6 @@
     Dawid Michal Roch Móll
 */
 
-//verificacion.h
 #include "simulacion.h"
  
 struct INFORMACION {
