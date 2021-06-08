@@ -20,4 +20,4 @@ Por otra parte, se han implementado algunas de las mejoras que contempla la plan
     - implementación del comando mi_touch para la creación de ficheros, dejando mi_mkdir solo para la creación de directorios
     - comando mi_ls mejorado para mostrar más información sobre cada entrada del directorio
     - creación del comando extra mi_rmdir que elimina los directorios a excepción del directorio raíz
-    - control de las secciones críticas de la capa de ficheros
+    - control de las secciones críticas de la capa de ficheros (CORREGIDO)
