@@ -60,7 +60,7 @@ int main(int argc,char **argv) {
             strcpy(permisos,"---");
         }
         if (inodo.tipo == 'd') {
-            fprintf(stdout,"\033[31m%c       %s         %s     %d           %s\033[0m\n", inodo.tipo,permisos, mtime, inodo.tamEnBytesLog,entrada.nombre);
+            fprintf(stderr,"\033[31m%c       %s         %s     %d           %s\033[0m\n", inodo.tipo,permisos, mtime, inodo.tamEnBytesLog,entrada.nombre);
         } else {
             fprintf(stderr,"%c       %s         %s     %d           %s\n", inodo.tipo,permisos, mtime, inodo.tamEnBytesLog,entrada.nombre);
         }
