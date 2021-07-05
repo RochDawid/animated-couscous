@@ -18,6 +18,10 @@ Por otra parte, se han implementado algunas de las mejoras que contempla la plan
     - mejora del init_MB()
     - implementación de un buffer de entradas en buscar_entrada() y mi_dir() para reducir las llamadas a lecturas
     - implementación del comando mi_touch para la creación de ficheros, dejando mi_mkdir solo para la creación de directorios
-    - comando mi_ls mejorado para mostrar más información sobre cada entrada del directorio
+    - comando mi_ls mejorado para mostrar más información sobre cada entrada del directorio (COMPROVAR)
     - creación del comando extra mi_rmdir que elimina los directorios a excepción del directorio raíz
     - control de las secciones críticas de la capa de ficheros (CORREGIDO)
+    - saltos de BL innecesarios en la función liberar_bloques_inodo() de la capa de ficheros_basicos
+    - caché de directorios para reducir las llamadas a buscar_entrada() mediante un algoritmo FIFO
+    - creación del comando mi_rn para renombrar ficheros o directorios
+    - creación del comando mi_mv para mover ficheros o directorios, excepto el raíz, a otro directorio

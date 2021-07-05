@@ -6,6 +6,11 @@
 
 #include "directorios.h"
 
+static struct UltimaEntrada UltimaEntradaEscritura[TAMFIFO];
+static struct UltimaEntrada UltimaEntradaLectura[TAMFIFO];
+static int numEntradaEscritura = 0;
+static int numEntradaLectura = 0;
+
 /*
     extraer_camino: función que pasándole una cadena de carácteres que indica el camino para acceder
                     al archivo que se desee lo separa en dos trozos (inicial y final) y determina el
@@ -272,10 +277,32 @@ int mi_write(const char *camino, const void *buf, unsigned int offset, unsigned 
     char reservar = 0;
     int error;
 
-    if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
-        mostrar_error_buscar_entrada(error);
-        return 0;
+    int iterador = 0;
+    while (iterador < TAMFIFO) {
+        if (strcmp(UltimaEntradaEscritura[iterador].camino,camino) == 0) {
+            p_inodo = UltimaEntradaEscritura[iterador].p_inodo;
+            //fprintf(stderr,"\nmi_write() -> Utilizamos la caché de escritura en vez de llamar a buscar_entrada()\n");
+            iterador = TAMFIFO;
+        }
+        iterador++;
     }
+
+    if (iterador == TAMFIFO) {
+        if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
+            mostrar_error_buscar_entrada(error);
+            return 0;
+        }
+        UltimaEntradaEscritura[numEntradaEscritura].p_inodo = p_inodo;
+        memset(UltimaEntradaEscritura[numEntradaEscritura].camino,0,sizeof(UltimaEntradaEscritura[numEntradaEscritura].camino));
+        strcpy(UltimaEntradaEscritura[numEntradaEscritura].camino,camino);
+        //fprintf(stderr,"mi_write() -> Actualizamos la caché de escritura\n");
+        if (numEntradaEscritura == TAMFIFO-1) {
+            numEntradaEscritura = 0;
+        } else {
+            numEntradaEscritura++;
+        }
+    }
+
     return mi_write_f(p_inodo, buf, offset, nbytes);
 }
 
@@ -286,10 +313,32 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
     char reservar = 0;
     int error;
 
-    if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
-        mostrar_error_buscar_entrada(error);
-        return 0;
+    int iterador = 0;
+    while (iterador < TAMFIFO) {
+        if (strcmp(UltimaEntradaLectura[iterador].camino,camino) == 0) {
+            p_inodo = UltimaEntradaLectura[iterador].p_inodo;
+            //fprintf(stderr,"\nmi_read() -> Utilizamos la caché de lectura en vez de llamar a buscar_entrada()\n");
+            iterador = TAMFIFO;
+        }
+        iterador++;
     }
+
+    if (iterador == TAMFIFO) {
+        if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
+            mostrar_error_buscar_entrada(error);
+            return 0;
+        }
+        UltimaEntradaLectura[numEntradaLectura].p_inodo = p_inodo;
+        memset(UltimaEntradaLectura[numEntradaLectura].camino,0,sizeof(UltimaEntradaLectura[numEntradaLectura].camino));
+        strcpy(UltimaEntradaLectura[numEntradaLectura].camino,camino);
+        //fprintf(stderr,"mi_read() -> Actualizamos la caché de lectura\n");
+        if (numEntradaLectura == TAMFIFO-1) {
+            numEntradaLectura = 0;
+        } else {
+            numEntradaLectura++;
+        }
+    }
+
     return mi_read_f(p_inodo, buf, offset, nbytes);
 }
 
@@ -310,13 +359,12 @@ int mi_link(const char *camino1, const char *camino2) {
     struct inodo inodo1;
 
     // comprobamos que la entrada camino1 existe
-    mi_waitSem();
     if ((error = buscar_entrada(camino1, &p_inodo_dir1, &p_inodo1, &p_entrada1, reservar, 6)) < 0) {
         mostrar_error_buscar_entrada(error);
         mi_signalSem();
         return -1;
     }
-    mi_signalSem();
+
     leer_inodo(p_inodo1, &inodo1); // leemos el inodo de la entrada
     // comprobamos que tiene permisos de lectura
     if ((inodo1.permisos & 4) != 4) {
