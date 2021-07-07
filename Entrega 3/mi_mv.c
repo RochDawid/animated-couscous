@@ -18,6 +18,7 @@ int main(int argc,char **argv) {
         return -1;
     }
 
+    // Error considerado por el equipo, no puede mover el contenido de la raíz a otro directorio
     if ((strlen(argv[2]) == 1 && argv[2][0] == '/')) {
         fprintf(stderr,"Error: El directorio raíz no puede ser movido a otro directorio\n");
         return -1;
@@ -43,6 +44,7 @@ int main(int argc,char **argv) {
     strcat(camino_nuevo,entrada.nombre);
 
     if (!mi_link(argv[2],camino_nuevo)) {
+        //mi_unlink(argv[2]);
         leer_inodo(p_inodo_dir, &inodo_dir);
         int nEntradas = inodo_dir.tamEnBytesLog/sizeof(struct entrada);
         if (p_entrada != nEntradas-1) {

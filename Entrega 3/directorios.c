@@ -513,3 +513,60 @@ int mi_unlink(const char *camino) {
         return 0;
     }
 }
+
+/*
+    mi_unlink: Función de la capa de directorios que borra la entrada de directorio especificada (no hay que olvidar 
+            actualizar la cantidad de enlaces en el inodo) y, en caso de que fuera el último enlace existente, 
+            borrar el propio fichero/directorio.
+    input: const char *camino
+    output: -
+    uses: 0 (success), -1 (failure)
+    used by: mi_rm.c
+*/
+int mi_unlink_r(const char *camino, int ninodo) {
+    mi_waitSem();
+    struct inodo inodo;
+    char camino_aux[strlen(camino) + 25];
+
+    memset(camino_aux,0,strlen(camino_aux));
+    strcpy(camino_aux,camino);
+
+    leer_inodo(ninodo, &inodo);
+
+    struct entrada entradas[BLOCKSIZE/sizeof(struct entrada)];
+    // calcular cantidad de entradas que tiene el inodo
+    int cant_entradas_inodo;
+    if (inodo.tipo == 'd') cant_entradas_inodo = inodo.tamEnBytesLog/sizeof(struct entrada);
+    else cant_entradas_inodo = 0;
+    int num_entrada_inodo = 0;
+    int indice = 0;
+    memset(entradas,0,BLOCKSIZE); // ponemos a 0 el buffer de lectura independientemente de la cantidad de entradas del inodo
+    struct inodo inodo_entrada;
+    if (cant_entradas_inodo > 0) {
+        int offset = 0;
+        mi_read_f(ninodo,entradas,offset,BLOCKSIZE);
+        while (num_entrada_inodo < cant_entradas_inodo) {
+            for (;(num_entrada_inodo < cant_entradas_inodo) && indice < BLOCKSIZE/sizeof(struct entrada);num_entrada_inodo++,indice++) {
+                leer_inodo(entradas[indice].ninodo,&inodo_entrada);
+                strcat(camino_aux,entradas[indice].nombre);
+                if (inodo_entrada.tipo == 'd') {
+                    strcat(camino_aux,"/");
+                }
+                mi_unlink_r(camino_aux, entradas[indice].ninodo);
+                memset(camino_aux,0,strlen(camino_aux));
+                //fprintf(stderr,"1 %s\n",camino);
+                strcpy(camino_aux,camino);
+            }
+            if (indice == BLOCKSIZE/sizeof(struct entrada)) {
+                indice = 0;
+                offset += BLOCKSIZE;
+                memset(entradas,0,BLOCKSIZE);
+                mi_read_f(ninodo,entradas,offset,BLOCKSIZE);
+            } 
+        }
+    }
+
+    mi_unlink(camino);
+    mi_signalSem();
+    return 0;
+}

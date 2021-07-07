@@ -2,8 +2,8 @@ echo "$./leer_sf disco"
 ./leer_sf disco
 echo "$./mi_ls disco /dir2/dir22/fic221"
 ./mi_ls disco /dir2/dir22/fic221
-echo "$./mi_mv disco /dir2/dir22/fic221 /dir1/fic11 #error destino"
-./mi_mv disco /dir2/dir22/fic221 /dir1/fic11
+echo "$./mi_mv disco /dir2/dir22/fic221 /dir2/dir22/ #error destino"
+./mi_mv disco /dir2/dir22/fic221 /dir2/dir22/
 echo "$./mi_ls disco /dir2/dir21/"
 ./mi_ls disco /dir2/dir21/
 echo "$./mi_mv disco /dir2/dir22/fic221 /dir2/dir21/ #movemos un fichero"
