@@ -197,14 +197,18 @@ int mi_creat(const char *camino, unsigned char permisos) {
     return 0;
 }
 
-int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buffer, char tipo
+int mi_dir(const char *camino, char *buffer, char tipo, int flag) {
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
     char reservar = 0;
-    struct entrada entradas[BLOCKSIZE/sizeof(struct entrada)];
-    struct inodo inodo;
+    struct entrada entradas[BLOCKSIZE/sizeof(struct entrada)], entradaFichero;
+    struct inodo inodo, inodo_padre;
     int error;
+    char tmp[80], numEntradas[10], fila[TAMFILA];
+    struct tm *tm;
+    char permisos[3];
+
     if ((error = buscar_entrada(camino,&p_inodo_dir,&p_inodo,&p_entrada,reservar,6)) < 0) {
         mostrar_error_buscar_entrada(error);
         return -1;
@@ -212,21 +216,78 @@ int mi_dir(const char *camino, char *buffer) { // const char *camino, char *buff
 
     leer_inodo(p_inodo, &inodo); // leemos el inodo de la entrada
 
-    if (inodo.tipo != 'd') return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO; // no se trata de un directorio
+    if (inodo.tipo != tipo) {
+        fprintf(stderr,"Error: la sintaxis no concuerda con el tipo\n");
+        return -1;
+    }
+
+    //if (inodo.tipo != 'd') return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO; // no se trata de un directorio
     if ((inodo.permisos & 4) != 4) return ERROR_PERMISO_LECTURA; // no tiene permisos de lectura
 
-    // calcular cantidad de entradas que tiene el inodo
-    int cant_entradas_inodo = inodo.tamEnBytesLog/sizeof(struct entrada);
+     int cant_entradas_inodo;
+    if (tipo == 'd') {
+        // calcular cantidad de entradas que tiene el inodo
+        cant_entradas_inodo = inodo.tamEnBytesLog/sizeof(struct entrada);
+
+        sprintf(numEntradas,"Total: %d\n",cant_entradas_inodo);
+        strcpy(buffer,numEntradas);
+    }
+
+    if (!flag) {
+        strcat(buffer,"Tipo    Permisos    mTime                   Tamaño            Nombre      \n");
+        strcat(buffer,"--------------------------------------------------------------------------\n");
+    } else {
+        strcat(buffer,"  Nombre  \n");
+        strcat(buffer,"----------\n");
+    }
+
+    if (tipo == 'f') {
+        leer_inodo(p_inodo_dir,&inodo_padre);
+
+        mi_read_f(p_inodo_dir,&entradaFichero,p_entrada*sizeof(struct entrada),sizeof(struct entrada));
+        if (flag) {
+            strcat(buffer,entradaFichero.nombre);
+            return 0;
+        }
+        if (inodo.permisos & 4) strcpy(permisos, "r"); else strcpy(permisos, "-");
+        if (inodo.permisos & 2) strcat(permisos, "w"); else strcat(permisos, "-");
+        if (inodo.permisos & 1) strcat(permisos, "x"); else strcat(permisos, "-");
+        tm = localtime(&inodo.mtime);
+        sprintf(tmp, "%d-%02d-%02d %02d:%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min,  tm->tm_sec);
+
+        sprintf(fila,"%c       %s         %s     %-9d         %s\n",inodo.tipo,permisos,tmp,inodo.tamEnBytesLog,entradaFichero.nombre);
+        strcat(buffer,fila);
+        
+        return 0;
+    }
+
     int num_entrada_inodo = 0;
     int indice = 0;
+    struct inodo inodo_iterado;
     memset(entradas,0,BLOCKSIZE);
     if (cant_entradas_inodo > 0) {
         int offset = 0;
         mi_read_f(p_inodo,entradas,offset,BLOCKSIZE);
         while (num_entrada_inodo < cant_entradas_inodo) {
             for (;(num_entrada_inodo < cant_entradas_inodo) && indice < BLOCKSIZE/sizeof(struct entrada);num_entrada_inodo++,indice++) {
-                strcat(buffer,entradas[indice].nombre);
-                strcat(buffer,"\t");
+                leer_inodo(entradas[indice].ninodo,&inodo_iterado);
+
+                if (!flag) {
+                    memset(fila,0,TAMFILA);
+
+                    if (inodo_iterado.permisos & 4) strcpy(permisos, "r"); else strcpy(permisos, "-");
+                    if (inodo_iterado.permisos & 2) strcat(permisos, "w"); else strcat(permisos, "-");
+                    if (inodo_iterado.permisos & 1) strcat(permisos, "x"); else strcat(permisos, "-");
+                    tm = localtime(&inodo_iterado.mtime);
+                    sprintf(tmp, "%d-%02d-%02d %02d:%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min,  tm->tm_sec);
+
+                    if (inodo_iterado.tipo == 'd') sprintf(fila,"\033[31m%c       %s         %s     %-9d         %s\033[0m\n",inodo_iterado.tipo,permisos,tmp,inodo_iterado.tamEnBytesLog,entradas[indice].nombre);
+                    else sprintf(fila,"%c       %s         %s     %-9d         %s\n",inodo_iterado.tipo,permisos,tmp,inodo_iterado.tamEnBytesLog,entradas[indice].nombre);
+                    strcat(buffer,fila);
+                } else {
+                    strcat(buffer,entradas[indice].nombre);
+                    strcat(buffer,"\n");
+                }
             }
             if (indice == BLOCKSIZE/sizeof(struct entrada)) {
                 indice = 0;
@@ -351,6 +412,7 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
     used by: mi_link.c
 */
 int mi_link(const char *camino1, const char *camino2) {
+    mi_waitSem();
     unsigned int p_inodo_dir1 = 0, p_inodo_dir2 = 0;
     unsigned int p_inodo1 = 0, p_inodo2 = 0;
     unsigned int p_entrada1 = 0, p_entrada2 = 0;
@@ -369,12 +431,12 @@ int mi_link(const char *camino1, const char *camino2) {
     // comprobamos que tiene permisos de lectura
     if ((inodo1.permisos & 4) != 4) {
         fprintf(stderr,"El inodo %d no tiene permisos de lectura\n",p_inodo1);
+        mi_signalSem();
         return -1;
     }
 
     reservar = 1;
     // si no existe la entrada camino2
-    mi_waitSem();
     if ((error = buscar_entrada(camino2, &p_inodo_dir2, &p_inodo2, &p_entrada2, reservar, 6)) == 0) {
         struct entrada entrada;
         mi_read_f(p_inodo_dir2, &entrada, sizeof(struct entrada) * p_entrada2, sizeof(struct entrada));
@@ -405,6 +467,7 @@ int mi_link(const char *camino1, const char *camino2) {
     used by: mi_rm.c
 */
 int mi_unlink(const char *camino) {
+    mi_waitSem();
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
@@ -415,6 +478,7 @@ int mi_unlink(const char *camino) {
     // comprobamos que la entrada camino existe
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, reservar, 6)) < 0) {
         mostrar_error_buscar_entrada(error);
+        mi_signalSem();
         return -1;
     }
 
@@ -422,6 +486,7 @@ int mi_unlink(const char *camino) {
 
     if (inodo.tipo == 'd' && inodo.tamEnBytesLog > 0) {
         fprintf(stderr,"Error: El directorio %s no está vacío\n",camino);
+        mi_signalSem();
         return -1;
     } 
 
@@ -434,7 +499,6 @@ int mi_unlink(const char *camino) {
     }
     mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog-sizeof(struct entrada));
 
-    mi_waitSem();
     leer_inodo(p_inodo, &inodo);
     inodo.nlinks--;
     if (inodo.nlinks == 0) {

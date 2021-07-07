@@ -215,21 +215,14 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes) { // no se puede trun
         } else {
             primerBL = nbytes/BLOCKSIZE+1;
         }
-        mi_waitSem();
+
         bloquesLiberados = liberar_bloques_inodo(primerBL, &inodo);
-        if (bloquesLiberados < 0) {
-            mi_signalSem();
-            return -1;
-        }
+        if (bloquesLiberados < 0) return -1;
         inodo.mtime = time(&timer);
         inodo.ctime = time(&timer);
         inodo.tamEnBytesLog = nbytes;
         inodo.numBloquesOcupados -= bloquesLiberados;
-        if (escribir_inodo(ninodo, inodo) < 0) {
-            mi_signalSem();
-            return -1;
-        }
-        mi_signalSem();
+        if (escribir_inodo(ninodo, inodo) < 0) return -1;
 
         return bloquesLiberados;
     } else {
