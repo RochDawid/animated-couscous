@@ -224,7 +224,7 @@ int mi_dir(const char *camino, char *buffer, char tipo, int flag) {
     //if (inodo.tipo != 'd') return ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO; // no se trata de un directorio
     if ((inodo.permisos & 4) != 4) return ERROR_PERMISO_LECTURA; // no tiene permisos de lectura
 
-     int cant_entradas_inodo;
+    int cant_entradas_inodo;
     if (tipo == 'd') {
         // calcular cantidad de entradas que tiene el inodo
         cant_entradas_inodo = inodo.tamEnBytesLog/sizeof(struct entrada);
@@ -524,7 +524,6 @@ int mi_unlink(const char *camino) {
     used by: mi_rm.c
 */
 int mi_unlink_r(const char *camino, int ninodo) {
-    mi_waitSem();
     struct inodo inodo;
     char camino_aux[strlen(camino) + 25];
 
@@ -567,6 +566,5 @@ int mi_unlink_r(const char *camino, int ninodo) {
     }
 
     mi_unlink(camino);
-    mi_signalSem();
     return 0;
 }
