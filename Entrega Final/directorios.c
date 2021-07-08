@@ -553,7 +553,6 @@ int mi_unlink_r(const char *camino, int ninodo) {
                 }
                 mi_unlink_r(camino_aux, entradas[indice].ninodo);
                 memset(camino_aux,0,strlen(camino_aux));
-                //fprintf(stderr,"1 %s\n",camino);
                 strcpy(camino_aux,camino);
             }
             if (indice == BLOCKSIZE/sizeof(struct entrada)) {
