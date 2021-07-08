@@ -525,7 +525,7 @@ int mi_unlink(const char *camino) {
 */
 int mi_unlink_r(const char *camino, int ninodo) {
     struct inodo inodo;
-    char camino_aux[strlen(camino) + 25];
+    char camino_aux[strlen(camino) + TAMNOMBRE];
 
     memset(camino_aux,0,strlen(camino_aux));
     strcpy(camino_aux,camino);
