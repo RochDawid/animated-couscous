@@ -7,7 +7,7 @@
 #include "ficheros.h"
 
 #define TAMNOMBRE 60 // tamaño del nombre de directorio o fichero, en ext2 = 256
-#define PROFUNDIDAD 32 // profundidad máxima del árbol de di
+#define PROFUNDIDAD 32 // profundidad máxima del árbol de directorios
 #define ERROR_CAMINO_INCORRECTO -1
 #define ERROR_PERMISO_LECTURA -2
 #define ERROR_NO_EXISTE_ENTRADA_CONSULTA -3
