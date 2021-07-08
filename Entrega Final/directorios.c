@@ -78,8 +78,8 @@ void mostrar_error_buscar_entrada(int error) {
     buscar_entrada: busca una determinada entrada entre las entradas del inodo correspondiente a su inodo padre.
     input: const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada,
            char reservar, unsigned char permisos
-    output: -
-    uses: 0 (success), -1 (failure)
+    output: 0 (success), -1 (failure)
+    uses: -
     used by: leer_sf.c
 */
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir, unsigned int *p_inodo, unsigned int *p_entrada, char reservar, unsigned char permisos) {
@@ -407,8 +407,8 @@ int mi_read(const char *camino, void *buf, unsigned int offset, unsigned int nby
     mi_link: crea el enlace de una entrada de directorio camino2 al inodo especificado
              por otra entrada de directorio camino1
     input: const char *camino1, const char *camino2
-    output: -
-    uses: 0 (success), -1 (failure)
+    output: 0 (success), -1 (failure)
+    uses: -
     used by: mi_link.c
 */
 int mi_link(const char *camino1, const char *camino2) {
@@ -462,8 +462,8 @@ int mi_link(const char *camino1, const char *camino2) {
             actualizar la cantidad de enlaces en el inodo) y, en caso de que fuera el último enlace existente, 
             borrar el propio fichero/directorio.
     input: const char *camino
-    output: -
-    uses: 0 (success), -1 (failure)
+    output: 0 (success), -1 (failure)
+    uses: 
     used by: mi_rm.c
 */
 int mi_unlink(const char *camino) {
@@ -515,13 +515,13 @@ int mi_unlink(const char *camino) {
 }
 
 /*
-    mi_unlink: Función de la capa de directorios que borra la entrada de directorio especificada (no hay que olvidar 
-            actualizar la cantidad de enlaces en el inodo) y, en caso de que fuera el último enlace existente, 
-            borrar el propio fichero/directorio.
-    input: const char *camino
-    output: -
-    uses: 0 (success), -1 (failure)
-    used by: mi_rm.c
+    mi_unlink_r: Función de la capa de directorios que borra las entradas de directorios no vacíos por debajo 
+            de la entrada especificada (no hay que olvidar actualizar la cantidad de enlaces en el inodo) y, 
+            en caso de que fuera el último enlace existente, borrar el propio fichero/directorio.
+    input: const char *camino, int ninodo
+    output: 0 (success), -1 (failure)
+    uses: mi_unlink(), mi_unlink_r()
+    used by: mi_rm_r.c
 */
 int mi_unlink_r(const char *camino, int ninodo) {
     struct inodo inodo;
