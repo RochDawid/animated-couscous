@@ -1,4 +1,4 @@
-#ejecutar primero el script estructura.sh para montar el árbol de directorios de ejmplo
+#ejecutar primero el script estructura.sh para montar el árbol de directorios de ejemplo
 
 echo "$ ./mi_rm_r disco /dir3/"
 $ ./mi_rm_r disco /dir3/
