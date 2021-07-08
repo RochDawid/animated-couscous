@@ -237,7 +237,7 @@ int mi_dir(const char *camino, char *buffer, char tipo, int flag) {
         strcat(buffer,"Tipo    Permisos    mTime                   Tamaño            Nombre      \n");
         strcat(buffer,"--------------------------------------------------------------------------\n");
     } else {
-        strcat(buffer,"  Nombre  \n");
+        strcat(buffer,"Nombre    \n");
         strcat(buffer,"----------\n");
     }
 
